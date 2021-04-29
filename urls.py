@@ -5,7 +5,7 @@ from uuid import uuid4
 
 # front controller
 def get_date(request):
-    request['data'] = date.today()
+    request['date'] = date.today()
 
 
 def get_key(request):

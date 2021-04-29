@@ -15,11 +15,12 @@ class Framework:
         self.fronts_lst = fronts_obj
 
     def __call__(self, environ, start_response):
-        # получаем адрес, по которому выполнен переход
+
+        # finding a path that was requested
         path = environ['PATH_INFO']
         path = add_closing_slash(path)
-        # находим нужный контроллер
-        # отработка паттерна page controller
+
+        # checking how to serve this path
         if path in self.routes_lst:
             view = self.routes_lst[path]
         else:
@@ -28,9 +29,13 @@ class Framework:
         request = {}
         for front in self.fronts_lst:
             front(request)
-        # запуск контроллера с передачей объекта request
-        print(f'request is {request}')
+
+        # generating response
         status, body = view(request)
-        start_response(status, [('Content-Type', 'text/html')])
+        response_headers = [
+            ('Content-Type', 'text/html')
+        ]
+
+        start_response(status, response_headers)
         return [body.encode('utf-8')]
 
