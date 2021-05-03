@@ -13,7 +13,12 @@ class About:
 
 class Register:
     def __call__(self, request):
-        return '200 OK', render('register.html', name=request.get('name', None))
+        return '200 OK', render('register.html', random_string=request.get('random_string', None))
+
+
+class Feedback:
+    def __call__(self, request):
+        return '200 OK', render('feedback.html', name=request.get('name', None))
 
 
 class NotFound404:

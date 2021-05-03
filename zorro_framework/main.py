@@ -9,7 +9,6 @@ class PageNotFound404:
 
 
 class Framework:
-    # TODO remove + for space
     """Класс Framework - основа фреймворка"""
 
     def __init__(self, routes_obj, fronts_obj):
@@ -26,12 +25,12 @@ class Framework:
 
         if method == 'POST':
             data = PostRequests().get_request_params(environ)
-            request['data'] = data
+            request['data'] = Framework.decode_value(data)
             print(f'Got POST request: {Framework.decode_value(data)}')
-        if method == 'GET':
+        elif method == 'GET':
             request_params = GetRequests().get_request_params(environ)
             request['request_params'] = request_params
-            print(f'Got GET parameters {request_params}')
+            print(f'Got GET parameters: {request_params}')
 
         # checking how to serve this path
         if path in self.routes_lst:

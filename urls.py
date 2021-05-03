@@ -1,5 +1,5 @@
 from datetime import date
-from views import Index, About, Register
+from views import Index, About, Register, Feedback
 from uuid import uuid4
 
 
@@ -30,4 +30,5 @@ routes = {
     '/': Index(),
     '/about/': About(),
     '/register/': Register(),
+    '/feedback/': Feedback(),
 }
