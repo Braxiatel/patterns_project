@@ -2,25 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Feedback</title>
 	<style type="text/css">
 			body {
 				font-family: Arial, Verdana, sans-serif;
 				font-size: 90%;
 				color: #666;
-				background-color: #f8f8f8;}
+				background-color: #f8f8f8;
+            }
 			li {
 				list-style-image: url("images/icon-plus.png");
-				line-height: 1.6em;}
+				line-height: 1.6em;
+            }
 			fieldset {
 				width: 310px;
 				margin-top: 20px;
 				border: 1px solid #d6d6d6;
 				background-color: #ffffff;
-				line-height: 1.6em;}
+				line-height: 1.6em;
+            }
 			legend {
 				font-style: italic;
-				color: #666666;}
+				color: #666666;
+            }
 			input[type="text"], input[type="email"] {
 				width: 120px;
 				border: 1px solid #d6d6d6;
@@ -40,41 +44,44 @@
 				color: #ffffff;
 				border-radius: 5px;
 				padding: 5px;
-				margin-top: 10px;}
+				margin-top: 10px;
+            }
 			input[type="submit"]:hover {
 				border: 1px solid #006633;
 				background-color: #00CC33;
 				color: #ffffff;
-				cursor: pointer;}
+				cursor: pointer;
+            }
 			.title {
 				float: left;
 				width: 160px;
-				clear: left;}
+				clear: left;
+            }
 			.submit {
 				width: 310px;
 				text-align: right;}
+            #feedback {
+                width: 120px;
+				border: 1px solid #d6d6d6;
+				padding: 2px;
+				outline: none;
+            }
 		</style>
 </head>
 <body>
     <form action="" method="post">
 			<fieldset>
-				<legend>Зарегистрируйтесь</legend>
-				<p><label class="title" for="name">Ваше имя:</label>
+				<legend>Send us your feedback:</legend>
+				<p><label class="title" for="name">Your Name:</label>
 					 <input type="text" name="name" id="name"><br />
-					 <label class="title" for="email">Ваш email:</label>
+					 <label class="title" for="email">Your Email:</label>
 					 <input type="email" name="email" id="email"></p>
-				<p><label for="location" class="title">Ближайший центр:</label>
-					 <select name="location" id="location">
-						 <option value="msk">Москва</option>
-						 <option value="spb">Санкт-Петербург</option>
-						 <option value="ektb">Екатеринбург</option>
-					 </select></p>
-				<span class="title">Являетесь участником?</span>
-				<label><input type="radio" name="member" value="yes" /> Да</label>
-				<label><input type="radio" name="member" value="no" /> Нет</label></p>
+				<p><label class="title" for="feedback" >Your Feedback:</label>
+                      <textarea name="feedback" id="feedback"></textarea>
+					</p>
 			</fieldset>
- 	    <div class="submit"><input type="submit" value="Регистрация" /></div>
+ 	    <div class="submit"><input type="submit" value="Send" /></div>
 		</form>
-		<p>Got some random string for you: {{random_string}}! </p>
+		<p>Thank you for your feedback: {{name}}! </p>
 </body>
 </html>

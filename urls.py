@@ -1,5 +1,5 @@
 from datetime import date
-from views import Index, About, Register
+from views import Index, About, Register, Feedback
 from uuid import uuid4
 
 
@@ -12,10 +12,23 @@ def get_key(request):
     request['random_string'] = uuid4()
 
 
-fronts = [get_date, get_key]
+def get_available_routes(request):
+    available_routes = ", ".join([d for d in routes.keys()])
+    request['available_routes'] = available_routes
+
+
+def get_name(request):
+    try:
+        request['name'] = request['data']['name']
+    except KeyError:
+        request['name'] = 'Anonymous'
+
+
+fronts = [get_date, get_key, get_available_routes, get_name]
 
 routes = {
     '/': Index(),
     '/about/': About(),
     '/register/': Register(),
+    '/feedback/': Feedback(),
 }
