@@ -12,7 +12,12 @@ def get_key(request):
     request['random_string'] = uuid4()
 
 
-fronts = [get_date, get_key]
+def get_available_routes(request):
+    available_routes = ", ".join([d for d in routes.keys()])
+    request['available_routes'] = available_routes
+
+
+fronts = [get_date, get_key, get_available_routes]
 
 routes = {
     '/': Index(),
