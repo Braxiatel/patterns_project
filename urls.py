@@ -17,7 +17,14 @@ def get_available_routes(request):
     request['available_routes'] = available_routes
 
 
-fronts = [get_date, get_key, get_available_routes]
+def get_name(request):
+    try:
+        request['name'] = request['data']['name']
+    except KeyError:
+        request['name'] = 'Anonymous'
+
+
+fronts = [get_date, get_key, get_available_routes, get_name]
 
 routes = {
     '/': Index(),

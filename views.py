@@ -8,12 +8,12 @@ class Index:
 
 class About:
     def __call__(self, request):
-        return '200 OK', 'about'
+        return '200 OK', render('about.html', available_routes=request.get('available_routes', None))
 
 
 class Register:
     def __call__(self, request):
-        return '200 OK', render('register.html', random_string=request.get('random_string', None))
+        return '200 OK', render('register.html', name=request.get('name', None))
 
 
 class NotFound404:
