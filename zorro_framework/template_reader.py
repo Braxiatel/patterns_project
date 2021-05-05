@@ -1,5 +1,5 @@
-from jinja2 import Template
-import os
+from jinja2 import FileSystemLoader, select_autoescape
+from jinja2 import Environment
 
 
 def render(template_name, folder='templates', **kwargs):
@@ -9,7 +9,9 @@ def render(template_name, folder='templates', **kwargs):
     :param kwargs: параметры
     :return:
     """
-    file_path = os.path.join(folder, template_name)
-    with open(file_path, encoding='utf-8') as f:
-        template = Template(f.read())
+
+    env = Environment(
+        loader=FileSystemLoader(folder),
+        autoescape=select_autoescape(['html', 'xml']))
+    template = env.get_template(template_name)
     return template.render(**kwargs)

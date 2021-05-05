@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    {% block style %}{% endblock %}
+</head>
+<body>
+  {% include 'block-nav.html' %}
+  <div class="row">
+    <div class="column side"></div>
+    <div class="column middle">
+      {% block body %}    {% endblock %}
+    </div>
+    <div class="column side"></div>
+  </div>
+  <div class="footer"></div>
+</body>
+</html>
