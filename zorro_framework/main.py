@@ -1,5 +1,5 @@
 from service import add_closing_slash
-from requests import GetRequests, PostRequests
+from .requests_handler import GetRequests, PostRequests
 import quopri
 
 
