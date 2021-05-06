@@ -13,13 +13,13 @@ def get_key(request):
 
 
 def get_available_routes(request):
-    available_routes = ", ".join([d for d in routes.keys()])
+    available_routes = [d for d in routes.keys()]
     request['available_routes'] = available_routes
 
 
 def get_name(request):
     try:
-        request['name'] = request['data']['name']
+        request['name'] = request['data']['feedback_name']
     except KeyError:
         request['name'] = 'Anonymous'
 

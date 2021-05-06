@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>About</title>
-        <style type="text/css">
-        body {
-            font-family: Arial, Verdana, sans-serif;
-            font-size: 90%;
-            color: #666;
-            background-color: #f8f8f8;
-        }
-        li {
-            list-style-image: url("images/icon-plus.png");
-            line-height: 1.6em;
-        }
-    </style>
-</head>
-<body>
-    <p>Available routes for this site: {{available_routes}} </p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}
+    About
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+    <h2>Available routes for this site are: </h2>
+    {% for route in available_routes %}
+        <p>{{ route }}</p>
+    {% endfor %}
+{% endblock %}
