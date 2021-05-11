@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+    Add course
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a new course:</legend>
+			<p><label class="title" for="name">Name:</label>
+				 <input type="text" name="name" id="name"><br />
+				</p>
+			<p><label for="category" class="title">Category:</label>
+					 <select name="category" id="category">
+						{% for item in categories_list %}
+							<option value="{{item.name}}">
+								{{item.name}}
+							</option>
+						{% endfor %}
+						 </select></p>
+		</fieldset>
+	<div class="submit"><input type="submit" value="Send" /></div>
+	</form>
+{% endblock %}

@@ -1,5 +1,7 @@
 from datetime import date
-from views import Index, About, Register, Feedback
+from views import Index, About, Register, Feedback, Categories, \
+    CoursesList, NewCourse, NewCategory, EmptyPage, ErrorPage, \
+    CourseCopy
 from uuid import uuid4
 
 
@@ -31,4 +33,11 @@ routes = {
     '/about/': About(),
     '/register/': Register(),
     '/feedback/': Feedback(),
+    '/courses/': CoursesList(),
+    '/new_course/': NewCourse(),
+    '/categories/': Categories(),
+    '/new_category/': NewCategory(),
+    '/empty_base/': EmptyPage(),
+    '/error/': ErrorPage(),
+    '/copy-course/': CourseCopy(),
 }
