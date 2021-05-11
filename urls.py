@@ -1,7 +1,7 @@
 from datetime import date
 from views import Index, About, Register, Feedback, Categories, \
     CoursesList, NewCourse, NewCategory, EmptyPage, ErrorPage, \
-    CourseCopy
+    CourseCopy, Signup
 from uuid import uuid4
 
 
@@ -40,4 +40,5 @@ routes = {
     '/empty_base/': EmptyPage(),
     '/error/': ErrorPage(),
     '/copy-course/': CourseCopy(),
+    '/signup/': Signup(),
 }

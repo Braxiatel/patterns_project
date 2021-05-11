@@ -11,7 +11,7 @@ logger = Logger('main')
 class Index:
     def __call__(self, request):
         logger.log('Index page with schedules')
-        return '200 OK', render('index.html', data=date.today())
+        return '200 OK', render('index.html', date=date.today())
 
 
 class Categories:
@@ -132,3 +132,30 @@ class EmptyPage:
 class ErrorPage:
     def __call__(self, request):
         return '200 OK', 'Error message.'
+
+
+class Signup:
+    def __call__(self, request):
+        if request['method'] == 'POST':
+
+            data = request['data']
+            logger.log(f'POST request for new course contains data: {data}')
+
+            name = data['name']
+            name = website_engine.decode_value(name)
+            email = data['email']
+            role = data['role']
+
+            if role == 'student':
+                user = website_engine.create_user(type_=role, name=name, email=email)
+                website_engine.students.append(user)
+                logger.log(website_engine.students)
+            elif role == 'teacher':
+                user = website_engine.create_user(type_=role, name=name, email=email)
+                website_engine.teachers.append(user)
+                logger.log(website_engine.teachers)
+            return '200 OK', render('index.html', date=date.today())
+        # if method is GET
+        else:
+            return '200 OK', render('signup.html', categories_list=website_engine.categories)
+

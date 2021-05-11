@@ -4,7 +4,7 @@ class User:
         self.email = email
 
     def __repr__(self):
-        print(f"This is a User {self.name}")
+        return self.name
 
 
 class Teacher(User):

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+    Register
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+	<form action="" method="post">
+			<fieldset>
+				<legend>Sign Up:</legend>
+				<p><label class="title" for="name">Name:</label>
+					 <input type="text" class="form-control" required="true" name="name" id="name"><br />
+					 <label class="title" for="email">Email:</label>
+					 <input type="email" class="form-control" required="true" name="email" id="email">
+                     <label class="title" for="password">Password:</label>
+					 <input type="password" class="form-control" required="true" name="email" id="password"></p>
+              <p><label for="role" class="title">Role:</label>
+					 <select name="role" id="role">
+						 <option value="teacher">Teacher</option>
+						 <option value="student">Student</option>
+					 </select></p>
+			</fieldset>
+		<div class="submit"><input type="submit" value="Signup" /></div>
+	</form>
+{% endblock %}

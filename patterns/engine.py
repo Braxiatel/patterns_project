@@ -11,8 +11,8 @@ class Engine:
         self.categories = []
 
     @staticmethod
-    def create_user(type_):
-        return UserFactory.create(type_)
+    def create_user(type_, name, email):
+        return UserFactory.create(type_, name, email)
 
     @staticmethod
     def create_course(type_, name, category):
