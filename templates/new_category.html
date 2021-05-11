@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}
+    Add category
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+	<form action="" method="post">
+		<fieldset>
+			<legend>Add a new category:</legend>
+			<p><label class="title" for="name">Name:</label>
+				 <input type="text" name="name" id="name"><br />
+				</p>
+		</fieldset>
+	<div class="submit"><input type="submit" value="Send" /></div>
+	</form>
+{% endblock %}

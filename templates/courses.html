@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}
+    Course List
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+  <div>
+        <a href="/new_course/">Create new course</a>
+        <br>
+        <h1>List of courses for category: "{{name}}"</h1>
+        {% for item in objects_list %}
+        <li>
+            {{item.name}} <span><a href="/copy-course/?name={{item.name}}">copy</a></span>
+        </li>
+        {% endfor %}
+    </div>
+{% endblock %}

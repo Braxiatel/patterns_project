@@ -7,64 +7,6 @@
         height: 100%;
         width: 100%;
     }
-    .menu ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #333;
-    }
-
-    .menu li {
-      float: left;
-    }
-
-    .menu li a {
-      display: block;
-      color: white;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-    }
-
-    .menu li a:hover {
-      background-color: #111;
-    }
-
-    /* Left and right column */
-    .column.side {
-        -webkit-flex: 0.1;
-        -ms-flex: 0.1;
-        flex: 0.1;
-        /* background-color: #B3C9FF; */
-        height: 100%;
-        border-top-width: 5px;
-    }
-
-    /* Middle column */
-    .column.middle {
-        -webkit-flex: 3;
-        -ms-flex: 3;
-        flex: 3;
-        background-color: #E6EDFF;
-        height: 100%;
-        border-style: solid;
-        border-color: #f8f8f8;
-        border-width: 10px;
-
-    }
-    .row {
-        display: flex;
-        height: 100%;
-        flex-direction: row;
-    }
-
-    .column {
-        padding-top: 10px;
-        height: 100%;
-        padding-left: 10px;
-        padding-bottom: 40%;
-    }
 
     li {
         line-height: 1.6em;
@@ -120,16 +62,17 @@
     }
 
     fieldset {
-        width: 370px;
+        width: 390px;
         margin-top: 20px;
         border: 1px solid #d6d6d6;
         background-color: #ffffff;
         line-height: 1.6em;
+        padding: 5px;
     }
     legend {
         font-style: italic;
         color: #666666;}
-    input[type="text"], input[type="email"] {
+    input[type="text"], input[type="email"], input[type="password"] {
         width: 120px;
         border: 1px solid #d6d6d6;
         padding: 2px;
@@ -137,7 +80,9 @@
     input[type="text"]:focus,
     input[type="text"]:hover,
     input[type="email"]:focus,
-    input[type="email"]:hover
+    input[type="email"]:hover,
+    input[type="password"]:focus,
+    input[type="password"]:hover
     {
         background-color: #d0e2f0;
         border: 1px solid #999999;
@@ -172,5 +117,12 @@
         border: 1px solid #d6d6d6;
         padding: 2px;
         outline: none;
+    }
+    .content-section {
+      background: #ffffff;
+      padding: 10px 20px;
+      border: 1px solid #dddddd;
+      border-radius: 3px;
+      margin-bottom: 20px;
     }
 </style>
