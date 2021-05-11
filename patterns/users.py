@@ -1,6 +1,7 @@
 class User:
-    def __init__(self, name):
+    def __init__(self, name, email):
         self.name = name
+        self.email = email
 
     def __repr__(self):
         print(f"This is a User {self.name}")
@@ -27,5 +28,5 @@ class UserFactory:
     }
 
     @classmethod
-    def create(cls, type_):
-        return cls.types[type_]()
+    def create(cls, type_, name, email):
+        return cls.types[type_](name, email)
