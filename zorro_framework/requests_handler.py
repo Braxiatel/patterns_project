@@ -1,4 +1,6 @@
-import cgi
+from patterns.logger import Logger
+
+logger = Logger('requests_handler')
 
 
 class GetRequests:
@@ -35,7 +37,7 @@ class PostRequests:
 
 def parse_input_data(data: str) -> dict:
     result = {}
-    print(f'Got data in Request: {data}')
+    logger.log(f'Got data in Request: {data}')
     if data:
         params = data.split('&')
         for item in params:
