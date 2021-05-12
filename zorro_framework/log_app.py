@@ -53,6 +53,9 @@ class LogApplication:
         start_response(status, response_headers)
         return [body.encode('utf-8')]
 
+    def __repr__(self):
+        return self.__class__.__name__
+
     @staticmethod
     def decode_value(data):
         new_data = {}
