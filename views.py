@@ -2,45 +2,54 @@ from datetime import date
 from random import randint
 from zorro_framework.template_reader import render
 from patterns.engine import Engine
-from patterns.logger import Logger
+from patterns.logger import Logger, FileLogger
+from patterns.decorators import timer, app_route
 
 website_engine = Engine()
-logger = Logger('main')
+logger = Logger('views')
+file_logger = FileLogger('views', 'test.log')
+routes = {}
 
 
+@app_route(routes=routes, url='/')
 class Index:
+    @timer(name="Index")
     def __call__(self, request):
-        logger.log('Index page with schedules')
+        file_logger.log('Index page with schedules')
         return '200 OK', render('index.html', date=date.today())
 
 
+@app_route(routes=routes, url='/categories/')
 class Categories:
+    @timer(name="Categories")
     def __call__(self, request):
         logger.log(f'Got list of categories: {website_engine.categories}')
         return '200 OK', render('categories.html', objects_list=website_engine.categories)
 
 
-class About:
-    def __call__(self, request):
-        return '200 OK', render('about.html', available_routes=request.get('available_routes', None))
-
-
+@app_route(routes=routes, url='/register/')
 class Register:
+    @timer(name="Register")
     def __call__(self, request):
         return '200 OK', render('register.html', random_string=request.get('random_string', None))
 
 
+@app_route(routes=routes, url='/feedback/')
 class Feedback:
+    @timer(name="Feedback")
     def __call__(self, request):
         return '200 OK', render('feedback.html', name=request.get('name', None))
 
 
 class NotFound404:
+    @timer(name="NotFound")
     def __call__(self, request):
         return render('error_page.html', error_text='404 PAGE NOT FOUND')
 
 
+@app_route(routes=routes, url='/courses/')
 class CoursesList:
+    @timer(name="CourseList")
     def __call__(self, request):
         try:
             logger.log(f'Got list of categories: {website_engine.courses}')
@@ -53,8 +62,9 @@ class CoursesList:
             return '200 OK', render('empty_base.html', name='courses')
 
 
+@app_route(routes=routes, url='/new_course/')
 class NewCourse:
-
+    @timer(name="NewCourse")
     def __call__(self, request):
         if request['method'] == 'POST':
 
@@ -82,17 +92,17 @@ class NewCourse:
                 return '200 OK', render('empty_base.html', name='categories')
 
 
+@app_route(routes=routes, url='/new_category/')
 class NewCategory:
+    @timer(name="NewCategory")
     def __call__(self, request):
         if request['method'] == 'POST':
-            # get name and category_id from request
+            # get name from request, create category_id
             data = request['data']
             logger.log(f'Getting {data} data from NewCategory view method')
             name = data['name']
             name = website_engine.decode_value(name)
-
             category_id = randint(1000, 5000)
-
             category = None
 
             new_category = website_engine.create_category(name=name, category=category, category_id=category_id)
@@ -105,7 +115,9 @@ class NewCategory:
             return '200 OK', render('new_category.html', categories=categories)
 
 
+@app_route(routes=routes, url='/copy-course/')
 class CourseCopy:
+    @timer(name="CourseCopy")
     def __call__(self, request):
         request_params = request['request_params']
 
@@ -124,17 +136,15 @@ class CourseCopy:
             return '200 OK', render('empty_base.html', name='courses')
 
 
+@app_route(routes=routes, url='/empty_page/')
 class EmptyPage:
     def __call__(self, request):
         return '200 OK', 'Just an empty page.'
 
 
-class ErrorPage:
-    def __call__(self, request):
-        return '200 OK', 'Error message.'
-
-
+@app_route(routes=routes, url='/signup/')
 class Signup:
+    @timer(name="SignUp")
     def __call__(self, request):
         if request['method'] == 'POST':
 
