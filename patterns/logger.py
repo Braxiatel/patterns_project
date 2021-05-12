@@ -24,8 +24,17 @@ class Logger(metaclass=LoggerSingleton):
     def __init__(self, name):
         self.name = name
 
-    @staticmethod
-    def log(text):
+    def log(self, text):
         now_time = datetime.now()
-        print(f'{now_time} ->', text)
+        print(f'[{self.name}] {now_time} ->', text)
 
+
+class FileLogger(metaclass=LoggerSingleton):
+    def __init__(self, name, file):
+        self.name = name
+        self.file = file
+
+    def log(self, text):
+        with open(self.file, "a+") as f:
+            now_time = datetime.now()
+            f.write(f'[{self.name}] {now_time} -> {text}\n')

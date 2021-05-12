@@ -1,6 +1,9 @@
 from service import add_closing_slash
 from .requests_handler import GetRequests, PostRequests
 import quopri
+from patterns.logger import Logger
+
+logger = Logger('main')
 
 
 class PageNotFound404:
@@ -9,7 +12,7 @@ class PageNotFound404:
 
 
 class Framework:
-    """Класс Framework - основа фреймворка"""
+    """Framework class"""
 
     def __init__(self, routes_obj, fronts_obj):
         self.routes_lst = routes_obj
@@ -26,11 +29,11 @@ class Framework:
         if method == 'POST':
             data = PostRequests().get_request_params(environ)
             request['data'] = Framework.decode_value(data)
-            print(f'Got POST request: {Framework.decode_value(data)}')
+            logger.log(f'Got POST request: {Framework.decode_value(data)}')
         elif method == 'GET':
             request_params = GetRequests().get_request_params(environ)
             request['request_params'] = request_params
-            print(f'Got GET parameters: {request_params}')
+            logger.log(f'Got GET request: {request_params}')
 
         # checking how to serve this path
         if path in self.routes_lst:
