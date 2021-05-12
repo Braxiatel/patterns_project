@@ -1,6 +1,7 @@
 from zorro_framework.main import Framework
-from urls import routes, fronts
+from urls import fronts
 import argparse
+from views import routes
 from wsgiref.simple_server import make_server
 
 parser = argparse.ArgumentParser(description='Simple implementation of web server.')
