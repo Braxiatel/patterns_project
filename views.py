@@ -52,12 +52,10 @@ class CoursesList:
     @timer(name="CourseList")
     def __call__(self, request):
         try:
-            logger.log(f'Got list of categories: {website_engine.courses}')
-            category = website_engine.categories[0]
+            logger.log(f'Got list of courses: {website_engine.courses}')
             return '200 OK', render('courses.html',
-                                    objects_list=website_engine.courses,
-                                    name=category.name,
-                                    id=category.category_id)
+                                    number_of_categories=len(website_engine.categories),
+                                    object_list=website_engine.courses)
         except IndexError:
             return '200 OK', render('empty_base.html', name='courses')
 
@@ -80,10 +78,10 @@ class NewCourse:
             website_engine.courses.append(course)
 
             logger.log(f'Course {course} has been successfully created')
-            logger.log(f'Course contains {course.category.category_id}')
-            return '200 OK', render('courses.html', categories_list=website_engine.categories,
-                                    objects_list=category.courses, name=category.name,
-                                    course_id=category.category_id)
+            logger.log(f'Course is written into {course.category.category_id}')
+            return '200 OK', render('courses.html',
+                                    object_list=website_engine.courses,
+                                    number_of_categories=len(website_engine.categories))
         # if method is GET
         else:
             if website_engine.categories:
@@ -109,7 +107,7 @@ class NewCategory:
             website_engine.categories.append(new_category)
             logger.log(f'Successfully added new category {new_category}')
 
-            return '200 OK', render('index.html', objects_list=website_engine.categories)
+            return '200 OK', render('categories.html', objects_list=website_engine.categories)
         else:
             categories = website_engine.categories
             return '200 OK', render('new_category.html', categories=categories)
