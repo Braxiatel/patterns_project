@@ -35,6 +35,16 @@ class FileLogger(metaclass=LoggerSingleton):
         self.file = file
 
     def log(self, text):
-        with open(self.file, "a+") as f:
+        with open(self.file, "a", encoding='utf-8') as f:
             now_time = datetime.now()
             f.write(f'[{self.name}] {now_time} -> {text}\n')
+
+
+class SocketLogger(metaclass=LoggerSingleton):
+    def __init__(self, name, sock):
+        self.name = name
+        self.sock = sock
+
+    def log(self, text):
+        now_time = datetime.now()
+        self.sock.sendall(f'[{self.name}] {now_time} -> {text}\n'.encode('ascii'))
