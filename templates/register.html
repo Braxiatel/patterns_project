@@ -9,24 +9,28 @@
 	<form action="" method="post">
 			<fieldset>
 				<legend>Register for a course:</legend>
-				<p><label class="title" for="name">Name:</label>
-					 <input type="text" name="name" id="name"><br />
-				<p><label for="course" class="title">Course:</label>
-					 <select name="course" id="course">
-						 <option value="fi">Finnish: Intermediate</option>
-						 <option value="nb">Norwegian: Beginner</option>
-						 <option value="si">Swedish: Intermediate</option>
-						 <option value="fa">Finnish: Advanced</option>
-					 </select></p>
-				<p><label for="location" class="title">Nearest school:</label>
-					 <select name="location" id="location">
-						 <option value="turku">Turku</option>
-						 <option value="savo">Savonlinna</option>
-						 <option value="hsk">Helsinki</option>
-					 </select></p>
-				<span class="title">Member of a program?</span>
-				<label><input type="radio" name="member" value="yes" /> Yes</label>
-				<label><input type="radio" name="member" value="no" /> No</label></p>
+				<p><label for="course_name" class="title">Course:</label>
+					{% if courses_count[0] == 0 %}
+						<p>No courses are found</p>
+				    {% else %}
+						{% for course in courses %}
+							 <select name="course_name" id="course_name">
+								 <option value="{{course}}">{{course}}</option>
+							 </select>
+						{% endfor %}
+				    {% endif %}
+			    </p>
+				<p><label for="student_name" class="title">Name:</label>
+					{% if students_count[0] == 0 %}
+						<p>No students are found</p>
+					{% else %}
+						{% for student in students %}
+							 <select name="student_name" id="student_name">
+								 <option value="{{student}}">{{student}}</option>
+							 </select>
+						{% endfor %}
+				{% endif %}
+				</p>
 			</fieldset>
 		<div class="submit"><input type="submit" value="Register" /></div>
 	</form>
