@@ -30,10 +30,12 @@ class EmailNotify(Observer):
     def update(self, subject):
         print('[EMAIL] ->', 'joined us', subject.students[-1].name)
 
-    def location_update(self, subject):
+    @staticmethod
+    def location_update(subject):
         print('[EMAIL] ->', 'location changed to', subject.location)
 
-    def date_update(self, subject):
+    @staticmethod
+    def date_update(subject):
         print('[EMAIL] ->', 'start date changed to', subject.start_date)
 
 
@@ -41,10 +43,12 @@ class SMSNotify(Observer):
     def update(self, subject):
         print('[SMS] ->', 'joined us', subject.students[-1].name)
 
-    def location_update(self, subject):
+    @staticmethod
+    def location_update(subject):
         print('[SMS] ->', 'location changed', subject.location)
 
-    def date_update(self, subject):
+    @staticmethod
+    def date_update(subject):
         print('[SMS] ->', 'start date changed to', subject.start_date)
 
 
