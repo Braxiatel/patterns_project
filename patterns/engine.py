@@ -15,8 +15,8 @@ class Engine:
         return UserFactory.create(type_, name, email)
 
     @staticmethod
-    def create_course(type_, name, category):
-        return CourseFactory.create(type_, name, category)
+    def create_course(type_, name, category, location, start_date):
+        return CourseFactory.create(type_, name, category, location, start_date)
 
     @staticmethod
     def create_category(name, category_id, category=None):
@@ -39,6 +39,11 @@ class Engine:
             if course.name == name:
                 return course
         return None
+
+    def get_student(self, name):
+        for item in self.students:
+            if item.name == name:
+                return item
 
     @staticmethod
     def decode_value(val):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from socket import socket
 
 
 class LoggerSingleton(type):
@@ -20,21 +21,40 @@ class LoggerSingleton(type):
 
 
 class Logger(metaclass=LoggerSingleton):
+    """
+    Simple logger to console.
+    """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
-    def log(self, text):
+    def log(self, text: str):
         now_time = datetime.now()
         print(f'[{self.name}] {now_time} ->', text)
 
 
 class FileLogger(metaclass=LoggerSingleton):
-    def __init__(self, name, file):
+    """
+    Logger into a file
+    """
+    def __init__(self, name: str, file: str):
         self.name = name
         self.file = file
 
     def log(self, text):
-        with open(self.file, "a+") as f:
+        with open(self.file, "a", encoding='utf-8') as f:
             now_time = datetime.now()
             f.write(f'[{self.name}] {now_time} -> {text}\n')
+
+
+class SocketLogger(metaclass=LoggerSingleton):
+    """
+    Logger to a socket
+    """
+    def __init__(self, name: str, sock: socket):
+        self.name = name
+        self.sock = sock
+
+    def log(self, text):
+        now_time = datetime.now()
+        self.sock.sendall(f'[{self.name}] {now_time} -> {text}\n'.encode('ascii'))

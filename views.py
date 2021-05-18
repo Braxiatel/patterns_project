@@ -4,10 +4,15 @@ from zorro_framework.template_reader import render
 from patterns.engine import Engine
 from patterns.logger import Logger, FileLogger
 from patterns.decorators import timer, app_route
+from patterns.views_templates import ListView, CreateView
+from patterns.api_module import BaseSerializer
+from patterns.updater import EmailNotify, SMSNotify
 
 website_engine = Engine()
 logger = Logger('views')
 file_logger = FileLogger('views', 'test.log')
+email_notifier = EmailNotify()
+sms_notifier = SMSNotify()
 routes = {}
 
 
@@ -20,18 +25,38 @@ class Index:
 
 
 @app_route(routes=routes, url='/categories/')
-class Categories:
-    @timer(name="Categories")
-    def __call__(self, request):
-        logger.log(f'Got list of categories: {website_engine.categories}')
-        return '200 OK', render('categories.html', objects_list=website_engine.categories)
+class Categories(ListView):
+    template_name = 'categories.html'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['categories_count'] = [len(website_engine.categories)]
+        if website_engine.categories:
+            context['objects_list'] = website_engine.categories
+        return context
 
 
 @app_route(routes=routes, url='/register/')
-class Register:
-    @timer(name="Register")
-    def __call__(self, request):
-        return '200 OK', render('register.html', random_string=request.get('random_string', None))
+class StudentCourseRegister(CreateView):
+    template_name = 'register.html'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['courses'] = website_engine.courses
+        context['students'] = website_engine.students
+        context['courses_count'] = [len(website_engine.courses)]
+        context['students_count'] = [len(website_engine.students)]
+        return context
+
+    def create_object(self, data: dict):
+        course_name = data['course_name']
+        course_name = website_engine.decode_value(course_name)
+        course = website_engine.get_course(course_name)
+        student_name = data['student_name']
+        student_name = website_engine.decode_value(student_name)
+        student = website_engine.get_student(student_name)
+        course.add_student(student)
+        logger.log(f'Students on course: {course.students}')
 
 
 @app_route(routes=routes, url='/feedback/')
@@ -48,16 +73,15 @@ class NotFound404:
 
 
 @app_route(routes=routes, url='/courses/')
-class CoursesList:
-    @timer(name="CourseList")
-    def __call__(self, request):
-        try:
-            logger.log(f'Got list of courses: {website_engine.courses}')
-            return '200 OK', render('courses.html',
-                                    number_of_categories=len(website_engine.categories),
-                                    object_list=website_engine.courses)
-        except IndexError:
-            return '200 OK', render('empty_base.html', name='courses')
+class CoursesList(ListView):
+    template_name = 'courses.html'
+
+    def get_context_data(self):
+        context_data = super().get_context_data()
+        context_data['courses_count'] = [len(website_engine.categories)]
+        if website_engine.courses:
+            context_data['objects_list'] = website_engine.courses
+        return context_data
 
 
 @app_route(routes=routes, url='/new_course/')
@@ -71,17 +95,25 @@ class NewCourse:
 
             name = data['name']
             name = website_engine.decode_value(name)
+            location = data['location']
+            location = website_engine.decode_value(location)
+            start_date = data['start_date']
+            start_date = website_engine.decode_value(start_date)
             category_name = data['category']
             category = website_engine.get_category_by_name(category_name)
 
-            course = website_engine.create_course(type_='video', name=name, category=category)
+            course = website_engine.create_course(type_='video', name=name, category=category,
+                                                  location=location, start_date=start_date)
             website_engine.courses.append(course)
+
+            course.observers.append(email_notifier)
+            course.observers.append(sms_notifier)
 
             logger.log(f'Course {course} has been successfully created')
             logger.log(f'Course is written into {course.category.category_id}')
             return '200 OK', render('courses.html',
-                                    object_list=website_engine.courses,
-                                    number_of_categories=len(website_engine.categories))
+                                    objects_list=website_engine.courses,
+                                    courses_count=len(website_engine.courses))
         # if method is GET
         else:
             if website_engine.categories:
@@ -106,11 +138,12 @@ class NewCategory:
             new_category = website_engine.create_category(name=name, category=category, category_id=category_id)
             website_engine.categories.append(new_category)
             logger.log(f'Successfully added new category {new_category}')
+            categories_count = [len(website_engine.categories)]
 
-            return '200 OK', render('categories.html', objects_list=website_engine.categories)
+            return '200 OK', render('categories.html', objects_list=website_engine.categories,
+                                    categories_count=categories_count)
         else:
-            categories = website_engine.categories
-            return '200 OK', render('new_category.html', categories=categories)
+            return '200 OK', render('new_category.html', categories=website_engine.categories)
 
 
 @app_route(routes=routes, url='/copy-course/')
@@ -129,9 +162,31 @@ class CourseCopy:
                 new_course.name = new_name
                 website_engine.courses.append(new_course)
             logger.log(f"new list of courses is {website_engine.courses}")
-            return '200 OK', render('courses.html', object_list=website_engine.courses)
+            courses_count = [len(website_engine.courses)]
+            return '200 OK', render('courses.html', object_list=website_engine.courses,
+                                    courses_count=courses_count)
         except KeyError:
             return '200 OK', render('empty_base.html', name='courses')
+
+
+@app_route(routes=routes, url='/course_update/')
+class CourseUpdate(CreateView):
+    template_name = 'course_update.html'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['courses'] = website_engine.courses
+        context['courses_count'] = [len(website_engine.courses)]
+        return context
+
+    def create_object(self, data: dict):
+        course_name = data['course_name']
+        course = website_engine.get_course(course_name)
+        location = data['location']
+        start_date = data['start_date']
+        course.update_location(location)
+        course.update_start_date(start_date)
+        logger.log(f'Now the course is: {course}')
 
 
 @app_route(routes=routes, url='/empty_page/')
@@ -147,7 +202,6 @@ class Signup:
         if request['method'] == 'POST':
 
             data = request['data']
-            logger.log(f'POST request for new course contains data: {data}')
 
             name = data['name']
             name = website_engine.decode_value(name)
@@ -157,13 +211,36 @@ class Signup:
             if role == 'student':
                 user = website_engine.create_user(type_=role, name=name, email=email)
                 website_engine.students.append(user)
-                logger.log(website_engine.students)
             elif role == 'teacher':
                 user = website_engine.create_user(type_=role, name=name, email=email)
                 website_engine.teachers.append(user)
                 logger.log(website_engine.teachers)
-            return '200 OK', render('index.html', date=date.today())
+
+            return '200 OK', render('student_list.html', objects_list=website_engine.students,
+                                    students_count=[len(website_engine.students)])
         # if method is GET
         else:
             return '200 OK', render('signup.html', categories_list=website_engine.categories)
 
+
+@app_route(routes=routes, url='/student_list/')
+class StudentListView(ListView):
+    template_name = 'student_list.html'
+
+    def get_context_data(self):
+        if website_engine.students:
+            context_data = super().get_context_data()
+            context_data['objects_list'] = website_engine.students
+            context_data['students_count'] = [len(website_engine.students)]
+            return context_data
+        else:
+            context_data = super().get_context_data()
+            context_data['students_count'] = [len(website_engine.students)]
+            return context_data
+
+
+@app_route(routes=routes, url='/api/')
+class CourseApi:
+    @timer(name='CourseApi')
+    def __call__(self, request):
+        return '200 OK', BaseSerializer(website_engine.courses).save()

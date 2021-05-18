@@ -1,4 +1,6 @@
 import copy
+from .users import Student
+from .updater import Subject
 
 
 # creating prototype for courses
@@ -8,14 +10,37 @@ class CoursePrototype:
         return copy.deepcopy(self)
 
 
-class Course(CoursePrototype):
-    def __init__(self, name, category):
+class Course(CoursePrototype, Subject):
+    def __init__(self, name, category, location, start_date):
         self.name = name
         self.category = category
         self.category.courses.append(self)
+        self.students = []
+        self.location = location
+        self.start_date = start_date
+        super().__init__()
 
     def __repr__(self):
         return self.name
+
+    def add_student(self, student: Student):
+        self.students.append(student)
+        student.courses.append(self)
+        self.notify()
+
+    def update_location(self, location):
+        self.location = location
+        self.notify_location()
+
+    def update_start_date(self, start_date):
+        self.start_date = start_date
+        self.notify_date()
+
+    def get_location(self):
+        return self.location
+
+    def get_start_date(self):
+        return self.start_date
 
 
 # types of courses
@@ -56,6 +81,6 @@ class CourseFactory:
     }
 
     @classmethod
-    def create(cls, type_, name, category):
-        return cls.types[type_](name, category)
+    def create(cls, type_, name, category, location, start_date):
+        return cls.types[type_](name, category, location, start_date)
 
