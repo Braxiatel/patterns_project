@@ -12,7 +12,10 @@ class Teacher(User):
 
 
 class Student(User):
-    pass
+
+    def __init__(self, name, email):
+        self.courses = []
+        super().__init__(name, email)
 
 
 class Admin(User):
