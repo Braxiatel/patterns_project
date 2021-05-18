@@ -7,14 +7,20 @@
 {% endblock %}
 {% block body %}
   <br />
+  {% if courses_count[0] == 0 %}
+  <h1>No courses found</h1>
+  {% else %}
   <div>
         <a href="/new_course/">Create new course</a>
         <br>
             <h1>List of courses: </h1>
-            {% for item in object_list %}
+      <ol>
+            {% for item in objects_list %}
             <li>
-                <b>{{item.name}}</b> in Category <i>{{item.category.name}}</i> <span><a href="/copy-course/?name={{item.name}}">copy</a></span>
+                <b>{{item.name}}</b> with location <i>{{item.location}}</i> and start date in <i>{{item.start_date}}</i> in Category <i>{{item.category.name}}</i> <span><a href="/copy-course/?name={{item.name}}">copy</a></span>
             </li>
             {% endfor %}
+      </ol>
     </div>
+  {% endif %}
 {% endblock %}
