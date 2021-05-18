@@ -6,8 +6,12 @@
     {% include 'block-style.html' %}
 {% endblock %}
 {% block body %}
-  <br />
-  <h1>List of Categories</h1>
+    <br />
+    {% if categories_count[0] == 0 %}
+        <h1> No categories found </h1>
+        <br />
+    {% else %}
+    <h1>List of Categories</h1>
     <ul>
 
         {% for item in objects_list %}
@@ -16,6 +20,7 @@
         </li>
         {% endfor %}
     </ul>
+    {% endif %}
 
 	<div>
 		<li><a href="/courses/">List Of Courses</a></li>
