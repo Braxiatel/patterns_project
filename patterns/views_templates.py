@@ -25,7 +25,7 @@ class TemplateView:
     def render_template_with_context(self):
         template_name = self.get_template()
         context = self.get_context_data()
-        print(f'got template: {template_name} and context: {context}')
+        logger.log(f'got template: {template_name} and context: {context}')
         return '200 OK', render(template_name, **context)
 
     def __call__(self, request):
@@ -67,6 +67,26 @@ class CreateView(TemplateView):
         if request['method'] == 'POST':
             data = self.get_request_data(request)
             self.create_object(data)
+            return self.render_template_with_context()
+
+        else:
+            return super().__call__(request)
+
+
+class UpdateView(TemplateView):
+    template_name = ''
+
+    @staticmethod
+    def get_request_data(request):
+        return request['data']
+
+    def update_object(self, data):
+        pass
+
+    def __call__(self, request):
+        if request['method'] == 'POST':
+            data = self.get_request_data(request)
+            self.update_object(data)
             return self.render_template_with_context()
 
         else:
