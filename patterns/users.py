@@ -1,3 +1,6 @@
+from patterns.unit_of_work import DomainObject
+
+
 class User:
     def __init__(self, name, email):
         self.name = name
@@ -11,11 +14,14 @@ class Teacher(User):
     pass
 
 
-class Student(User):
+class Student(User, DomainObject):
 
     def __init__(self, name, email):
         self.courses = []
         super().__init__(name, email)
+
+    def update_email(self, email):
+        self.email = email
 
 
 class Admin(User):
