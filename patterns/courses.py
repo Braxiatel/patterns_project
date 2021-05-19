@@ -1,6 +1,7 @@
 import copy
 from .users import Student
 from .updater import Subject
+from patterns.unit_of_work import DomainObject
 
 
 # creating prototype for courses
@@ -53,7 +54,7 @@ class VideoCourse(Course):
 
 
 # categories of courses
-class CourseCategory:
+class CourseCategory(DomainObject):
     # id is needed for lookup
     init_id = 0
 

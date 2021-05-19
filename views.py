@@ -2,17 +2,20 @@ from datetime import date
 from random import randint
 from zorro_framework.template_reader import render
 from patterns.engine import Engine
-from patterns.logger import Logger, FileLogger
+from patterns.logger import Logger
+from patterns.mapper_registry import MapperRegistry
 from patterns.decorators import timer, app_route
-from patterns.views_templates import ListView, CreateView
+from patterns.views_templates import ListView, CreateView, UpdateView
 from patterns.api_module import BaseSerializer
 from patterns.updater import EmailNotify, SMSNotify
+from patterns.unit_of_work import UnitOfWork
 
 website_engine = Engine()
 logger = Logger('views')
-file_logger = FileLogger('views', 'test.log')
 email_notifier = EmailNotify()
 sms_notifier = SMSNotify()
+UnitOfWork.new_thread()
+UnitOfWork.get_thread().set_mapper_registry(MapperRegistry)
 routes = {}
 
 
@@ -20,7 +23,6 @@ routes = {}
 class Index:
     @timer(name="Index")
     def __call__(self, request):
-        file_logger.log('Index page with schedules')
         return '200 OK', render('index.html', date=date.today())
 
 
@@ -29,10 +31,14 @@ class Categories(ListView):
     template_name = 'categories.html'
 
     def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('category')
+        categories = mapper.all()
+        logger.log(f'Got result from db {categories}')
+
         context = super().get_context_data()
-        context['categories_count'] = [len(website_engine.categories)]
-        if website_engine.categories:
-            context['objects_list'] = website_engine.categories
+        context['categories_count'] = [len(categories)]
+        if categories:
+            context['objects_list'] = categories
         return context
 
 
@@ -137,10 +143,15 @@ class NewCategory:
 
             new_category = website_engine.create_category(name=name, category=category, category_id=category_id)
             website_engine.categories.append(new_category)
+            new_category.mark_new()
+            UnitOfWork.get_thread().commit()
             logger.log(f'Successfully added new category {new_category}')
             categories_count = [len(website_engine.categories)]
 
-            return '200 OK', render('categories.html', objects_list=website_engine.categories,
+            mapper = MapperRegistry.get_current_mapper('category')
+            categories = mapper.all()
+
+            return '200 OK', render('categories.html', objects_list=categories,
                                     categories_count=categories_count)
         else:
             return '200 OK', render('new_category.html', categories=website_engine.categories)
@@ -170,7 +181,7 @@ class CourseCopy:
 
 
 @app_route(routes=routes, url='/course_update/')
-class CourseUpdate(CreateView):
+class CourseUpdate(UpdateView):
     template_name = 'course_update.html'
 
     def get_context_data(self):
@@ -179,7 +190,7 @@ class CourseUpdate(CreateView):
         context['courses_count'] = [len(website_engine.courses)]
         return context
 
-    def create_object(self, data: dict):
+    def update_object(self, data: dict):
         course_name = data['course_name']
         course = website_engine.get_course(course_name)
         location = data['location']
@@ -211,12 +222,16 @@ class Signup:
             if role == 'student':
                 user = website_engine.create_user(type_=role, name=name, email=email)
                 website_engine.students.append(user)
+                user.mark_new()
+                UnitOfWork.get_thread().commit()
+                mapper = MapperRegistry.get_current_mapper('student')
+                user_students = mapper.all()
             elif role == 'teacher':
                 user = website_engine.create_user(type_=role, name=name, email=email)
                 website_engine.teachers.append(user)
                 logger.log(website_engine.teachers)
 
-            return '200 OK', render('student_list.html', objects_list=website_engine.students,
+            return '200 OK', render('student_list.html', objects_list=user_students,
                                     students_count=[len(website_engine.students)])
         # if method is GET
         else:
@@ -228,15 +243,45 @@ class StudentListView(ListView):
     template_name = 'student_list.html'
 
     def get_context_data(self):
-        if website_engine.students:
+        mapper = MapperRegistry.get_current_mapper('student')
+        user_students = mapper.all()
+        logger.log(f'Got result from db {user_students}')
+        if user_students:
             context_data = super().get_context_data()
-            context_data['objects_list'] = website_engine.students
-            context_data['students_count'] = [len(website_engine.students)]
+            context_data['objects_list'] = user_students
+            context_data['students_count'] = [len(user_students)]
             return context_data
         else:
             context_data = super().get_context_data()
-            context_data['students_count'] = [len(website_engine.students)]
+            context_data['students_count'] = [len(user_students)]
             return context_data
+
+
+@app_route(routes=routes, url='/student_update/')
+class StudentUpdateView(UpdateView):
+    template_name = 'student_update.html'
+
+    def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('student')
+        user_students = mapper.all()
+        logger.log(f'Got result from db {user_students}')
+        context = super().get_context_data()
+        context['students'] = user_students
+        context['students_count'] = [len(user_students)]
+        return context
+
+    def update_object(self, data: dict):
+        email = data['email']
+        student_name = data['student_name']
+        student_name = website_engine.decode_value(student_name)
+
+        mapper = MapperRegistry.get_current_mapper('student')
+        student = mapper.get_student_by_name(student_name)
+
+        student.update_email(email)
+        student.mark_dirty()
+        UnitOfWork.get_thread().commit()
+        logger.log(f'Now the student is: {student}')
 
 
 @app_route(routes=routes, url='/api/')
