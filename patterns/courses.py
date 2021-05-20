@@ -1,6 +1,7 @@
 import copy
 from .users import Student
 from .updater import Subject
+from patterns.unit_of_work import DomainObject
 
 
 # creating prototype for courses
@@ -10,7 +11,7 @@ class CoursePrototype:
         return copy.deepcopy(self)
 
 
-class Course(CoursePrototype, Subject):
+class Course(CoursePrototype, Subject, DomainObject):
     def __init__(self, name, category, location, start_date):
         self.name = name
         self.category = category
@@ -53,7 +54,7 @@ class VideoCourse(Course):
 
 
 # categories of courses
-class CourseCategory:
+class CourseCategory(DomainObject):
     # id is needed for lookup
     init_id = 0
 
