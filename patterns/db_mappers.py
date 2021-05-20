@@ -182,9 +182,16 @@ class CourseMapper:
         except Exception as e:
             raise DBCommitException(e.args)
 
+    def get_id_by_name(self, course_name):
+        statement = f'SELECT course_id FROM {self.tablename} WHERE name=?'
+        self.cursor.execute(statement, (course_name,))
+        return self.cursor.fetchone()
+
     def update(self, obj):
-        statement = f'UPDATE {self.tablename} SET name=? WHERE course_id=?'
-        self.cursor.execute(statement, (obj.name, obj.course_id))
+        # id is not present in Student class, so take it from db
+        course_id = self.get_id_by_name(obj.name)[0]
+        statement = f'UPDATE {self.tablename} SET name=?, location=?, start_date=? WHERE course_id=?'
+        self.cursor.execute(statement, (obj.name, obj.location, obj.start_date, course_id))
         try:
             self.connection.commit()
         except Exception as e:
@@ -197,6 +204,21 @@ class CourseMapper:
             self.connection.commit()
         except Exception as e:
             raise DBDeleteException(e.args)
+
+    def get_course_by_name(self, course_name):
+        statement = f'SELECT name, category, location, start_date FROM {self.tablename} WHERE name=?'
+        self.cursor.execute(statement, (course_name, ))
+        result = self.cursor.fetchone()
+
+        logger.log(f"Got result of execution {result}")
+        if result:
+            # rebuilding 'result', because category is stored in db as id (int),
+            # but Course class requires Category (user class) as input
+            category = CategoryMapper(self.connection).get_category_by_id(result[1])
+            new_result = [result[0], category, result[2], result[3]]
+            return Course(*new_result)
+        else:
+            raise RecordNotFoundException(f'Record with {course_name} is not found')
 
 
 class DBCommitException(Exception):

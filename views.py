@@ -48,19 +48,25 @@ class StudentCourseRegister(CreateView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context['courses'] = website_engine.courses
-        context['students'] = website_engine.students
-        context['courses_count'] = [len(website_engine.courses)]
-        context['students_count'] = [len(website_engine.students)]
+        student_mapper = MapperRegistry.get_current_mapper('student')
+        students = student_mapper.all()
+        student_mapper = MapperRegistry.get_current_mapper('course')
+        courses = student_mapper.all()
+        context['courses'] = courses
+        context['students'] = students
+        context['courses_count'] = [len(courses)]
+        context['students_count'] = [len(students)]
         return context
 
     def create_object(self, data: dict):
+        student_mapper = MapperRegistry.get_current_mapper('student')
+        course_mapper = MapperRegistry.get_current_mapper('course')
         course_name = data['course_name']
         course_name = website_engine.decode_value(course_name)
-        course = website_engine.get_course(course_name)
+        course = course_mapper.get_course_by_name(course_name)
         student_name = data['student_name']
         student_name = website_engine.decode_value(student_name)
-        student = website_engine.get_student(student_name)
+        student = student_mapper.get_student_by_name(student_name)
         course.add_student(student)
         logger.log(f'Students on course: {course.students}')
 
@@ -146,7 +152,6 @@ class NewCategory:
         if request['method'] == 'POST':
             # get name from request, create category_id
             data = request['data']
-            logger.log(f'Getting {data} data from NewCategory view method')
             name = data['name']
             name = website_engine.decode_value(name)
             category_id = randint(1000, 5000)
@@ -197,18 +202,22 @@ class CourseUpdate(UpdateView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context['courses'] = website_engine.courses
-        context['courses_count'] = [len(website_engine.courses)]
+        course_mapper = MapperRegistry.get_current_mapper('course')
+        courses = course_mapper.all()
+        context['courses'] = courses
+        context['courses_count'] = [len(courses)]
         return context
 
     def update_object(self, data: dict):
         course_name = data['course_name']
-        course = website_engine.get_course(course_name)
+        course_mapper = MapperRegistry.get_current_mapper('course')
+        course = course_mapper.get_course_by_name(course_name)
         location = data['location']
         start_date = data['start_date']
         course.update_location(location)
         course.update_start_date(start_date)
-        logger.log(f'Now the course is: {course}')
+        course.mark_dirty()
+        UnitOfWork.get_thread().commit()
 
 
 @app_route(routes=routes, url='/empty_page/')
@@ -220,6 +229,7 @@ class EmptyPage:
 @app_route(routes=routes, url='/signup/')
 class Signup:
     @timer(name="SignUp")
+    # does not work for teachers yet
     def __call__(self, request):
         if request['method'] == 'POST':
 

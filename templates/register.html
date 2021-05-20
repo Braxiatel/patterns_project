@@ -13,22 +13,22 @@
 					{% if courses_count[0] == 0 %}
 						<p>No courses are found</p>
 				    {% else %}
-						{% for course in courses %}
-							 <select name="course_name" id="course_name">
+						<select name="course_name" id="course_name">
+							{% for course in courses %}
 								 <option value="{{course}}">{{course}}</option>
-							 </select>
-						{% endfor %}
+							{% endfor %}
+						</select>
 				    {% endif %}
 			    </p>
 				<p><label for="student_name" class="title">Name:</label>
 					{% if students_count[0] == 0 %}
 						<p>No students are found</p>
 					{% else %}
-						{% for student in students %}
-							 <select name="student_name" id="student_name">
+						<select name="student_name" id="student_name">
+							{% for student in students %}
 								 <option value="{{student}}">{{student}}</option>
-							 </select>
-						{% endfor %}
+							{% endfor %}
+						</select>
 				{% endif %}
 				</p>
 			</fieldset>
