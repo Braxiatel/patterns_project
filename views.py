@@ -83,10 +83,14 @@ class CoursesList(ListView):
     template_name = 'courses.html'
 
     def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('course')
+        courses = mapper.all()
+        logger.log(f'got courses: {courses}')
+
         context_data = super().get_context_data()
-        context_data['courses_count'] = [len(website_engine.categories)]
-        if website_engine.courses:
-            context_data['objects_list'] = website_engine.courses
+        context_data['courses_count'] = [len(courses)]
+        if courses:
+            context_data['objects_list'] = courses
         return context_data
 
 
@@ -94,6 +98,7 @@ class CoursesList(ListView):
 class NewCourse:
     @timer(name="NewCourse")
     def __call__(self, request):
+        mapper = MapperRegistry.get_current_mapper('category')
         if request['method'] == 'POST':
 
             data = request['data']
@@ -106,24 +111,30 @@ class NewCourse:
             start_date = data['start_date']
             start_date = website_engine.decode_value(start_date)
             category_name = data['category']
-            category = website_engine.get_category_by_name(category_name)
+            category = mapper.get_category_by_name(category_name=category_name)
 
             course = website_engine.create_course(type_='video', name=name, category=category,
                                                   location=location, start_date=start_date)
             website_engine.courses.append(course)
+            course.mark_new()
+            UnitOfWork.get_thread().commit()
+            logger.log(f'Successfully added new category {course}')
 
             course.observers.append(email_notifier)
             course.observers.append(sms_notifier)
 
+            mapper = MapperRegistry.get_current_mapper('course')
+            courses = mapper.all()
             logger.log(f'Course {course} has been successfully created')
             logger.log(f'Course is written into {course.category.category_id}')
             return '200 OK', render('courses.html',
-                                    objects_list=website_engine.courses,
-                                    courses_count=len(website_engine.courses))
+                                    objects_list=courses,
+                                    courses_count=len(courses))
         # if method is GET
         else:
-            if website_engine.categories:
-                return '200 OK', render('new_course.html', categories_list=website_engine.categories)
+            categories = mapper.all()
+            if categories:
+                return '200 OK', render('new_course.html', categories_list=categories)
             else:
                 return '200 OK', render('empty_base.html', name='categories')
 

@@ -11,7 +11,7 @@ class CoursePrototype:
         return copy.deepcopy(self)
 
 
-class Course(CoursePrototype, Subject):
+class Course(CoursePrototype, Subject, DomainObject):
     def __init__(self, name, category, location, start_date):
         self.name = name
         self.category = category

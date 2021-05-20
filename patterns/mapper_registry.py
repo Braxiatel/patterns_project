@@ -1,6 +1,6 @@
-from patterns.db_mappers import StudentMapper, CategoryMapper
+from patterns.db_mappers import StudentMapper, CategoryMapper, CourseMapper
 from patterns.users import Student
-from patterns.courses import CourseCategory
+from patterns.courses import CourseCategory, Course
 from patterns.logger import Logger
 import sqlite3
 
@@ -12,6 +12,7 @@ class MapperRegistry:
     mappers = {
         'student': StudentMapper,
         'category': CategoryMapper,
+        'course': CourseMapper,
     }
 
     @staticmethod
@@ -21,6 +22,8 @@ class MapperRegistry:
             return StudentMapper(connection)
         elif isinstance(obj, CourseCategory):
             return CategoryMapper(connection)
+        elif isinstance(obj, Course):
+            return CourseMapper(connection)
 
     @staticmethod
     def get_current_mapper(name):
