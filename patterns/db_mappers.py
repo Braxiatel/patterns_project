@@ -1,4 +1,5 @@
 from random import randint
+import json
 from patterns.logger import Logger
 from patterns.users import Student
 from patterns.courses import CourseCategory, Course
@@ -90,7 +91,9 @@ class CategoryMapper:
         result = []
         for item in self.cursor.fetchall():
             category_id, category, name, courses = item
+            courses = json.loads(courses)
             category = CourseCategory(name=name, category=category, category_id=category_id)
+            category.courses.extend(courses)
             result.append(category)
         return result
 
@@ -114,28 +117,36 @@ class CategoryMapper:
         else:
             raise RecordNotFoundException(f'Record with {category_id} is not found')
 
-    def get_courses_from_category(self, category_name):
-        statement = f'SELECT courses FROM {self.tablename} WHERE category_name=?'
-        self.cursor.execute(statement, (category_name,))
-        result = self.cursor.fetchone()
-        if result:
-            return CourseCategory(*result)
-        else:
-            raise RecordNotFoundException(f'Record with {category_name} is not found')
+    def get_courses_from_category(self, category_id):
+        statement = f'SELECT courses FROM {self.tablename} WHERE category_id=?'
+        self.cursor.execute(statement, (category_id,))
+        try:
+            result = self.cursor.fetchone()[0]
+            return result if result else '[]'
+        except TypeError:
+            return '[]'
 
     def insert(self, obj):
-        statement = f'INSERT INTO {self.tablename} (name, category, category_id ) VALUES (?, ?, ?)'
-        self.cursor.execute(statement, (obj.name, obj.category, obj.category_id))
+        courses = '[]'
+        statement = f'INSERT INTO {self.tablename} (name, category, category_id, courses ) VALUES (?, ?, ?, ?)'
+        self.cursor.execute(statement, (obj.name, obj.category, obj.category_id, courses))
         try:
             self.connection.commit()
         except Exception as e:
             raise DBCommitException(e.args)
 
     def update(self, obj):
-        # should update not rewrite courses
-        statement = f'UPDATE {self.tablename} SET courses=? WHERE category_id=?'
-        self.cursor.execute(statement, (obj.courses, obj.category_id))
-        logger.log(f'adding course id to a category')
+        db_courses = self.get_courses_from_category(obj.category_id)
+        db_courses = json.loads(db_courses)
+
+        # appending new course to the existing list of courses
+        db_courses.append(obj.courses[-1].name)
+
+        # dumping it to store in appropriate format
+        dumped_courses = json.dumps(db_courses)
+        logger.log(f'Appending new courses {dumped_courses} to category')
+        statement = f'UPDATE {self.tablename} SET courses=? WHERE name=?'
+        self.cursor.execute(statement, (dumped_courses, obj.name))
         try:
             self.connection.commit()
         except Exception as e:

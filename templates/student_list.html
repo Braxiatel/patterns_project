@@ -7,17 +7,26 @@
 {% endblock %}
 {% block body %}
   <br />
+    <a href="/signup/">Register as a student</a>
   {% if students_count[0] < 1 %}
   <h1>No students found </h1>
   {% else %}
   <h1>List of Students</h1>
-    <ul>
-
-        {% for item in objects_list %}
-        <li>
-            <b>{{item.name}} and email {{item.email}}</b>
-        </li>
-        {% endfor %}
-    </ul>
+  <br>
+    <table class="table">
+          <thead class="thead-dark">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in objects_list %}
+            <tr>
+                <th scope="row">{{item.name}}</th>
+                <td>{{item.email}}</td>
+            </tr>
+            {% endfor %}
+    </table>
   {% endif %}
 {% endblock %}

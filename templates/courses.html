@@ -11,16 +11,32 @@
   <h1>No courses found</h1>
   {% else %}
   <div>
-        <a href="/new_course/">Create new course</a>
-        <br>
-            <h1>List of courses: </h1>
-      <ol>
+      <a href="/new_course/">Create new course</a>
+      <br>
+          <h1>List of courses: </h1>
+      <br>
+      <table class="table">
+          <thead class="thead-dark">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Location</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">Category</th>
+                <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
             {% for item in objects_list %}
-            <li>
-                <b>{{item.name}}</b> with location <i>{{item.location}}</i> and start date in <i>{{item.start_date}}</i> in Category <i>{{item.category.name}}</i> <span><a href="/copy-course/?name={{item.name}}">copy</a></span>
-            </li>
+            <tr>
+                <th scope="row">{{item.name}}</th>
+                <td>{{item.location}}</td>
+                <td>{{item.start_date}}</td>
+                <td>{{item.category.name}}</td>
+                <td><span><a href="/copy-course/?name={{item.name}}">copy</a></span></td>
+            </tr>
             {% endfor %}
-      </ol>
+          </tbody>
+      </table>
     </div>
   {% endif %}
 {% endblock %}

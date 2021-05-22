@@ -121,7 +121,9 @@ class NewCourse:
 
             course = website_engine.create_course(type_='video', name=name, category=category,
                                                   location=location, start_date=start_date)
-            website_engine.courses.append(course)
+
+            category.courses.append(course)
+            category.mark_dirty()
             course.mark_new()
             UnitOfWork.get_thread().commit()
             logger.log(f'Successfully added new category {course}')
