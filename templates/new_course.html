@@ -10,10 +10,10 @@
 		<fieldset>
 			<legend>Add a new course:</legend>
 			<p><label class="title" for="name">Name:</label>
-				<input type="text" name="name" id="name"><br />
+				<input type="text" class="form-control" name="name" id="name">
 			</p>
 			<p><label for="category" class="title">Category:</label>
-					 <select name="category" id="category" required="true">
+					 <select name="category" class="form-control" id="category" required="true">
 						{% for item in categories_list %}
 							<option value="{{item.name}}">
 								{{item.name}}
@@ -21,12 +21,12 @@
 						{% endfor %}
 					 </select></p>
 			<p><label class="title" for="location">Location:</label>
-				<input type="text" name="location" id="location"><br />
+				<input type="text" class="form-control" name="location" id="location">
 			</p>
 			<p><label class="title" for="start_date">Start date:</label>
-				<input type="text" name="start_date" id="start_date"><br />
+				<input type="text" class="form-control" name="start_date" id="start_date"><br />
 			</p>
 		</fieldset>
-	<div class="submit"><input type="submit" value="Send" /></div>
+	<div class="submit"><input class="btn btn-dark" type="submit" value="Send" /></div>
 	</form>
 {% endblock %}

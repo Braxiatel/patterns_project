@@ -8,16 +8,22 @@
 {% block body %}
 	<form action="" method="post">
 		<fieldset>
-			<legend>Send us your feedback:</legend>
-			<p><label class="title" for="name">Name:</label>
-				 <input type="text" name="feedback_name" id="name"><br />
-				 <label class="title" for="email">Email:</label>
-				 <input type="email" name="feedback_email" id="email"></p>
-			<p><label class="title" for="feedback">Feedback:</label>
-				  <textarea name="feedback_text" id="feedback"></textarea>
-				</p>
+			<div class="form-group">
+			<h2>Send us your feedback:</h2>
+			<br>
+			     <label class="title" for="name">Name:</label>
+				 <input type="text" class="form-control" name="feedback_name" id="name"><br />
+			</div>
+			<div class="form-group">
+				<label class="title" for="email">Email:</label>
+				<input type="email" class="form-control" name="feedback_email" id="email"></p>
+			</div>
+			<div class="form-group">
+				<label class="title" for="feedback">Feedback:</label>
+				<textarea name="feedback_text" class="form-control" id="feedback"></textarea>
+			</div>
 		</fieldset>
-	<div class="submit"><input type="submit" value="Send" /></div>
+	<div class="submit"><input class="btn btn-dark" type="submit" value="Send" /></div>
 	</form>
 	{% if name != "Anonymous" and name != " " %}
 		<p>Thank you for your feedback: {{name}}! </p>

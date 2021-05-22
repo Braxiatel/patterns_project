@@ -7,31 +7,34 @@
 {% endblock %}
 {% block body %}
 	<form action="" method="post">
-			<fieldset>
-				<legend>Register for a course:</legend>
-				<p><label for="course_name" class="title">Course:</label>
+		<fieldset>
+			<div class="form-group">
+				<h2>Register for a course:</h2>
+				<label for="course_name" class="title">Course:</label>
 					{% if courses_count[0] == 0 %}
 						<p>No courses are found</p>
 				    {% else %}
-						<select name="course_name" id="course_name">
+						<select class="form-control" name="course_name" id="course_name">
 							{% for course in courses %}
 								 <option value="{{course}}">{{course}}</option>
 							{% endfor %}
 						</select>
 				    {% endif %}
-			    </p>
-				<p><label for="student_name" class="title">Name:</label>
+			</div>
+			<br>
+			<div class="form-group">
+				<label for="student_name" class="title">Student Name:</label>
 					{% if students_count[0] == 0 %}
 						<p>No students are found</p>
 					{% else %}
-						<select name="student_name" id="student_name">
+						<select class="form-control" name="student_name" id="student_name">
 							{% for student in students %}
 								 <option value="{{student}}">{{student}}</option>
 							{% endfor %}
 						</select>
 				{% endif %}
-				</p>
-			</fieldset>
-		<div class="submit"><input type="submit" value="Register" /></div>
+			</div>
+		<div class="submit"><input class="btn btn-dark" type="submit" value="Register" /></div>
+		</fieldset>
 	</form>
 {% endblock %}

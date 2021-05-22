@@ -12,21 +12,24 @@
 	{% else %}
 		<form action="" method="post">
 			<fieldset>
-				<legend>Update Student Info:</legend>
-				<br><br>
-				<p><label for="student_name" class="title">Student Name:</label>
-						 <select name="student_name" id="student_name">
-							{% for student in students %}
-								<option value="{{student.name}}">
-									{{student.name}}
-								</option>
-							{% endfor %}
-						 </select></p>
-				<p><label class="title" for="email">New Email:</label>
-					 <input type="text" name="email" id="email"><br />
-				</p>
+				<div class="form-group">
+				<h2>Update Student Info:</h2>
+					<label for="student_name" class="title">Student Name:</label>
+					<select name="student_name" class="form-control" id="student_name">
+					    {% for student in students %}
+							<option value="{{student.name}}">
+								{{student.name}}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+				</br>
+				<div class="form-group">
+					<label class="title" for="email">New Email:</label>
+					<input type="text" class="form-control" name="email" id="email"><br />
+				</div>
 			</fieldset>
-		<div class="submit"><input type="submit" value="Send" /></div>
+		<div class="submit"><input class="btn btn-dark" type="submit" value="Send" /></div>
 	</form>
 	{% endif %}
 {% endblock %}
