@@ -6,22 +6,21 @@
     {% include 'block-style.html' %}
 {% endblock %}
 {% block body %}
-	<br>
 	{% if courses_count[0] == 0 %}
+	<br>
 	  <h1>No courses found</h1>
 	{% else %}
 		<form action="" method="post">
 			<fieldset>
-				<legend>Update A Course:</legend>
-				<br><br>
+				<h2>Update A Course:</h2>
 				<p><label for="course_name" class="title">Course Name:</label>
-						 <select name="course_name" id="course_name">
+						 <select name="course_name" class="form-control" id="course_name">
 							{% for course in courses %}
 								<option value="{{course.name}}">
 									{{course.name}}
 								</option>
 							{% endfor %}
-						 </select></p>
+						 </select></p><br />
 				<p><label class="title" for="location">Location:</label>
 					 <input type="text" class="form-control" name="location" id="location"><br />
 				</p>

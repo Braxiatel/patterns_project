@@ -6,9 +6,12 @@
     {% include 'block-style.html' %}
 {% endblock %}
 {% block body %}
+{% if categories_count[0] == 0 %}
+	<h3> At least one category should be added before creating new course. Add new category <a href="/new_category/">here</a></h3>
+{% else %}
 	<form action="" method="post">
 		<fieldset>
-			<legend>Add a new course:</legend>
+			<h2>Add a new course:</h2>
 			<p><label class="title" for="name">Name:</label>
 				<input type="text" class="form-control" name="name" id="name">
 			</p>
@@ -29,4 +32,5 @@
 		</fieldset>
 	<div class="submit"><input class="btn btn-dark" type="submit" value="Send" /></div>
 	</form>
+{% endif %}
 {% endblock %}
