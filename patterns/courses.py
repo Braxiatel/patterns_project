@@ -55,8 +55,6 @@ class VideoCourse(Course):
 
 # categories of courses
 class CourseCategory(DomainObject):
-    # id is needed for lookup
-    init_id = 0
 
     def __init__(self, name, category, category_id):
         self.category_id = category_id
