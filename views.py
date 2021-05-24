@@ -53,8 +53,7 @@ class StudentCourseRegister(CreateView):
         students = student_mapper.all()
         student_mapper = MapperRegistry.get_current_mapper('course')
         courses = student_mapper.all()
-        context['courses'] = courses
-        context['students'] = students
+        context['courses'], context['students'] = courses, students
         context['courses_count'] = [len(courses)]
         context['students_count'] = [len(students)]
         return context
@@ -241,7 +240,6 @@ class Signup(CreateView):
 
         if role == 'student':
             user = website_engine.create_user(type_=role, name=name, email=email)
-            # website_engine.students.append(user)
             user.mark_new()
             UnitOfWork.get_thread().commit()
         elif role == 'teacher':
@@ -272,15 +270,10 @@ class StudentListView(ListView):
         mapper = MapperRegistry.get_current_mapper('student')
         user_students = mapper.all()
         logger.log(f'Got result from db {user_students}')
-        if user_students:
-            context_data = super().get_context_data()
-            context_data['students'] = user_students
-            context_data['students_count'] = [len(user_students)]
-            return context_data
-        else:
-            context_data = super().get_context_data()
-            context_data['students_count'] = [len(user_students)]
-            return context_data
+        context_data = super().get_context_data()
+        context_data['students'] = user_students
+        context_data['students_count'] = [len(user_students)]
+        return context_data
 
 
 @app_route(routes=routes, url='/student_update/')
