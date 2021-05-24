@@ -9,7 +9,7 @@ Antipatterns
 
 ### Spaghetti code
 
-```python
+```
 class NewCourse:
     @timer(name="NewCourse")
     def __call__(self, request):
@@ -59,7 +59,7 @@ class NewCourse:
 
 class `NewCourse` был похож на спагетти, возможно из-за того, что на странице требовалось большое количество разных данных и с добавлением БД стало сложно понимать как происходит обработка страницы `NewCourse`. После того как эта страница была переписана под стиль ClassView, структура стала более понятной. 
 
-```python
+```
 
 class NewCourse(CreateView):
     template_name = 'new_course.html'
@@ -134,18 +134,18 @@ class NewCourse(CreateView):
 
 ### Asking for permission instead of forgiveness
 ```
-     self.cursor.execute(statement, (course_name, ))
-     result = self.cursor.fetchone()
-    
-     logger.log(f"Got result of execution {result} and type {type(result)}")
+def get_course_by_name(self, course_name):
+    statement = f'SELECT name, category, location, start_date FROM {self.tablename} WHERE name=?'
+    self.cursor.execute(statement, (course_name, ))
+    result = self.cursor.fetchone()
+
     if result:
         [...]
         return Course(*new_result)
     else:
         raise RecordNotFoundException(f'Record with {course_name} is not found')
 ```
-Пример, когда необходимо использовать `try ... except` но был написан `if ... else`
-
+Пример, когда необходимо использовать `try ... except` но был использован `if ... else` и отсутствовала обработка ошибок от запроса.
 
 ## Методологические антипаттерны
 
