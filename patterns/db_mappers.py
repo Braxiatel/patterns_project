@@ -218,18 +218,21 @@ class CourseMapper:
 
     def get_course_by_name(self, course_name):
         statement = f'SELECT name, category, location, start_date FROM {self.tablename} WHERE name=?'
-        self.cursor.execute(statement, (course_name, ))
-        result = self.cursor.fetchone()
+        try:
+            self.cursor.execute(statement, (course_name, ))
+            result = self.cursor.fetchone()
 
-        logger.log(f"Got result of execution {result}")
-        if result:
-            # rebuilding 'result', because category is stored in db as id (int),
-            # but Course class requires Category (user class) as input
-            category = CategoryMapper(self.connection).get_category_by_id(result[1])
-            new_result = [result[0], category, result[2], result[3]]
-            return Course(*new_result)
-        else:
-            raise RecordNotFoundException(f'Record with {course_name} is not found')
+            logger.log(f"Got result of execution {result} and type {type(result)}")
+            if result:
+                # rebuilding 'result', because category is stored in db as id (int),
+                # but Course class requires Category (user class) as input
+                category = CategoryMapper(self.connection).get_category_by_id(result[1])
+                new_result = [result[0], category, result[2], result[3]]
+                return Course(*new_result)
+            else:
+                raise RecordNotFoundException(f'Record with name {course_name} not found')
+        except Exception as e:
+            raise RecordNotFoundException(f'Record not found: {e}')
 
 
 class DBCommitException(Exception):

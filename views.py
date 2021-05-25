@@ -1,5 +1,6 @@
 from datetime import date
 from random import randint
+from sqlite3 import IntegrityError
 from zorro_framework.template_reader import render
 from patterns.engine import Engine
 from patterns.logger import Logger
@@ -52,8 +53,7 @@ class StudentCourseRegister(CreateView):
         students = student_mapper.all()
         student_mapper = MapperRegistry.get_current_mapper('course')
         courses = student_mapper.all()
-        context['courses'] = courses
-        context['students'] = students
+        context['courses'], context['students'] = courses, students
         context['courses_count'] = [len(courses)]
         context['students_count'] = [len(students)]
         return context
@@ -101,78 +101,79 @@ class CoursesList(ListView):
 
 
 @app_route(routes=routes, url='/new_course/')
-class NewCourse:
-    @timer(name="NewCourse")
-    def __call__(self, request):
+class NewCourse(CreateView):
+    template_name = 'new_course.html'
+
+    def create_object(self, data: dict):
+        name = data['name']
+        name = website_engine.decode_value(name)
+        location = data['location']
+        location = website_engine.decode_value(location)
+        start_date = data['start_date']
+        start_date = website_engine.decode_value(start_date)
+        category_name = data['category']
         mapper = MapperRegistry.get_current_mapper('category')
-        if request['method'] == 'POST':
+        category = mapper.get_category_by_name(category_name=category_name)
 
-            data = request['data']
-            logger.log(f'POST request for new course contains data: {data}')
+        course = website_engine.create_course(type_='video', name=name, category=category,
+                                              location=location, start_date=start_date)
 
-            name = data['name']
-            name = website_engine.decode_value(name)
-            location = data['location']
-            location = website_engine.decode_value(location)
-            start_date = data['start_date']
-            start_date = website_engine.decode_value(start_date)
-            category_name = data['category']
-            category = mapper.get_category_by_name(category_name=category_name)
+        category.courses.append(course)
+        category.mark_dirty()
+        course.mark_new()
+        UnitOfWork.get_thread().commit()
+        logger.log(f'Course {course} has been successfully created')
 
-            course = website_engine.create_course(type_='video', name=name, category=category,
-                                                  location=location, start_date=start_date)
+        course.observers.append(email_notifier)
+        course.observers.append(sms_notifier)
 
-            category.courses.append(course)
-            category.mark_dirty()
-            course.mark_new()
-            UnitOfWork.get_thread().commit()
-            logger.log(f'Successfully added new category {course}')
+    def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('course')
+        courses = mapper.all()
+        context_data = super().get_context_data()
+        context_data['objects_list'] = courses
+        context_data['courses_count'] = [len(courses)]
+        categories = MapperRegistry.get_current_mapper('category')
+        categories_list = categories.all()
+        context_data['categories_list'] = categories_list
+        context_data['categories_count'] = [len(categories_list)]
+        return context_data
 
-            course.observers.append(email_notifier)
-            course.observers.append(sms_notifier)
+    def template_for_post_request(self):
+        self.set_template_name('courses.html')
 
-            mapper = MapperRegistry.get_current_mapper('course')
-            courses = mapper.all()
-            logger.log(f'Course {course} has been successfully created')
-            logger.log(f'Course is written into {course.category.category_id}')
-            return '200 OK', render('courses.html',
-                                    objects_list=courses,
-                                    courses_count=len(courses))
-        # if method is GET
-        else:
-            categories = mapper.all()
-            if categories:
-                return '200 OK', render('new_course.html', categories_list=categories)
-            else:
-                return '200 OK', render('empty_base.html', name='categories')
+    def template_for_get_request(self):
+        self.set_template_name('new_course.html')
 
 
 @app_route(routes=routes, url='/new_category/')
-class NewCategory:
-    @timer(name="NewCategory")
-    def __call__(self, request):
-        if request['method'] == 'POST':
-            # get name from request, create category_id
-            data = request['data']
-            name = data['name']
-            name = website_engine.decode_value(name)
-            category_id = randint(1000, 5000)
-            category = None
+class NewCategory(CreateView):
+    template_name = 'new_category.html'
 
-            new_category = website_engine.create_category(name=name, category=category, category_id=category_id)
-            website_engine.categories.append(new_category)
-            new_category.mark_new()
-            UnitOfWork.get_thread().commit()
-            logger.log(f'Successfully added new category {new_category}')
-            categories_count = [len(website_engine.categories)]
+    def create_object(self, data: dict):
+        category_name = data['name']
+        category_name = website_engine.decode_value(category_name)
+        category_id = randint(1000, 5000)
+        category = None
 
-            mapper = MapperRegistry.get_current_mapper('category')
-            categories = mapper.all()
+        new_category = website_engine.create_category(name=category_name, category=category, category_id=category_id)
+        new_category.mark_new()
+        UnitOfWork.get_thread().commit()
+        logger.log(f'Successfully added new category {new_category}')
 
-            return '200 OK', render('categories.html', objects_list=categories,
-                                    categories_count=categories_count)
-        else:
-            return '200 OK', render('new_category.html', categories=website_engine.categories)
+    def template_for_post_request(self):
+        self.set_template_name('categories.html')
+
+    def template_for_get_request(self):
+        self.set_template_name('new_category.html')
+
+    def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('category')
+        categories = mapper.all()
+        context = super().get_context_data()
+        context['objects_list'] = categories
+        context['categories_count'] = [len(categories)]
+        return context
 
 
 @app_route(routes=routes, url='/copy-course/')
@@ -184,18 +185,24 @@ class CourseCopy:
         try:
             name = request_params['name']
             logger.log(f'copying the course {name}')
-            existing_course = website_engine.get_course(name)
+            mapper = MapperRegistry.get_current_mapper('course')
+            existing_course = mapper.get_course_by_name(name)
             if existing_course:
                 new_name = f'{name}_copy'
                 new_course = existing_course.clone()
                 new_course.name = new_name
-                website_engine.courses.append(new_course)
-            logger.log(f"new list of courses is {website_engine.courses}")
-            courses_count = [len(website_engine.courses)]
-            return '200 OK', render('courses.html', object_list=website_engine.courses,
+                new_course.mark_new()
+                UnitOfWork.get_thread().commit()
+            courses = mapper.all()
+            logger.log(f"new list of courses is {courses}")
+            courses_count = [len(courses)]
+            return '200 OK', render('courses.html', objects_list=courses,
                                     courses_count=courses_count)
-        except KeyError:
-            return '200 OK', render('empty_base.html', name='courses')
+        except IntegrityError:
+            return '400 NOK', render('error_page.html',
+                                     error_text=f'Unable to copy course: course with this name already exists')
+        except Exception as e:
+            return '400 NOK', render('error_page.html', error_text=f'Unable to copy course: {e}')
 
 
 @app_route(routes=routes, url='/course_update/')
@@ -222,43 +229,37 @@ class CourseUpdate(UpdateView):
         UnitOfWork.get_thread().commit()
 
 
-@app_route(routes=routes, url='/empty_page/')
-class EmptyPage:
-    def __call__(self, request):
-        return '200 OK', 'Just an empty page.'
-
-
 @app_route(routes=routes, url='/signup/')
-class Signup:
-    @timer(name="SignUp")
-    # does not work for teachers yet
-    def __call__(self, request):
-        if request['method'] == 'POST':
+class Signup(CreateView):
+    template_name = 'signup.html'
 
-            data = request['data']
+    def create_object(self, data: dict):
+        name = data['name']
+        name = website_engine.decode_value(name)
+        email, role = data['email'], data['role']
 
-            name = data['name']
-            name = website_engine.decode_value(name)
-            email = data['email']
-            role = data['role']
+        if role == 'student':
+            user = website_engine.create_user(type_=role, name=name, email=email)
+            user.mark_new()
+            UnitOfWork.get_thread().commit()
+        elif role == 'teacher':
+            user = website_engine.create_user(type_=role, name=name, email=email)
+            website_engine.teachers.append(user)
+            logger.log(website_engine.teachers)
 
-            if role == 'student':
-                user = website_engine.create_user(type_=role, name=name, email=email)
-                website_engine.students.append(user)
-                user.mark_new()
-                UnitOfWork.get_thread().commit()
-                mapper = MapperRegistry.get_current_mapper('student')
-                user_students = mapper.all()
-            elif role == 'teacher':
-                user = website_engine.create_user(type_=role, name=name, email=email)
-                website_engine.teachers.append(user)
-                logger.log(website_engine.teachers)
+    def template_for_post_request(self):
+        self.set_template_name('student_list.html')
 
-            return '200 OK', render('student_list.html', objects_list=user_students,
-                                    students_count=[len(website_engine.students)])
-        # if method is GET
-        else:
-            return '200 OK', render('signup.html', categories_list=website_engine.categories)
+    def template_for_get_request(self):
+        self.set_template_name('signup.html')
+
+    def get_context_data(self):
+        mapper = MapperRegistry.get_current_mapper('student')
+        user_students = mapper.all()
+        context = super().get_context_data()
+        context['students'] = user_students
+        context['students_count'] = [len(user_students)]
+        return context
 
 
 @app_route(routes=routes, url='/student_list/')
@@ -269,15 +270,10 @@ class StudentListView(ListView):
         mapper = MapperRegistry.get_current_mapper('student')
         user_students = mapper.all()
         logger.log(f'Got result from db {user_students}')
-        if user_students:
-            context_data = super().get_context_data()
-            context_data['objects_list'] = user_students
-            context_data['students_count'] = [len(user_students)]
-            return context_data
-        else:
-            context_data = super().get_context_data()
-            context_data['students_count'] = [len(user_students)]
-            return context_data
+        context_data = super().get_context_data()
+        context_data['students'] = user_students
+        context_data['students_count'] = [len(user_students)]
+        return context_data
 
 
 @app_route(routes=routes, url='/student_update/')
@@ -305,6 +301,12 @@ class StudentUpdateView(UpdateView):
         student.mark_dirty()
         UnitOfWork.get_thread().commit()
         logger.log(f'Now the student is: {student}')
+
+    def template_for_post_request(self):
+        self.set_template_name('student_list.html')
+
+    def template_for_get_request(self):
+        self.set_template_name('student_update.html')
 
 
 @app_route(routes=routes, url='/api/')

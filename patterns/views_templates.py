@@ -16,6 +16,12 @@ class TemplateView:
     def get_context_data(self):
         return {}
 
+    def template_for_get_request(self):
+        pass
+
+    def template_for_post_request(self):
+        pass
+
     def get_template(self):
         return self.template_name
 
@@ -67,9 +73,10 @@ class CreateView(TemplateView):
         if request['method'] == 'POST':
             data = self.get_request_data(request)
             self.create_object(data)
+            self.template_for_post_request()
             return self.render_template_with_context()
-
         else:
+            self.template_for_get_request()
             return super().__call__(request)
 
 
@@ -87,7 +94,8 @@ class UpdateView(TemplateView):
         if request['method'] == 'POST':
             data = self.get_request_data(request)
             self.update_object(data)
+            self.template_for_post_request()
             return self.render_template_with_context()
-
         else:
+            self.template_for_get_request()
             return super().__call__(request)

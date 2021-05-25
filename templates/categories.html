@@ -8,23 +8,36 @@
 {% block body %}
     <br />
     {% if categories_count[0] == 0 %}
-        <h1> No categories found </h1>
-        <br />
+        <h1> No categories found</h1>
+    <br />
     {% else %}
-    <h1>List of Categories</h1>
-    <ul>
+    <div>
+        <a href="/new_category/">Create New Category</a>
+        <br>
+            <h1>List of Categories</h1>
+        <br>
+        <table class="table">
+              <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Courses in category</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in objects_list %}
+                <tr>
+                    <th scope="row">{{item.name}}</th>
+                    <td>{{item.course_count()}}</td>
+                </tr>
 
-        {% for item in objects_list %}
-        <li>
-            <b>{{item.name}}</b> <span>Number of courses for this category: {{item.course_count()}}</span>
-        </li>
-        {% endfor %}
-    </ul>
+                {% endfor %}
+              </tbody>
+        </table>
+    </div>
     {% endif %}
 
 	<div>
 		<li><a href="/courses/">List Of Courses</a></li>
 		<li><a href="/new_course/">Create New Course</a></li>
-        <li><a href="/new_category/">Create New Category</a></li>
 	</div>
 {% endblock %}
