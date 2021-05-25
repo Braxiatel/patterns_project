@@ -232,7 +232,7 @@ class CourseMapper:
             else:
                 raise RecordNotFoundException(f'Record with name {course_name} not found')
         except Exception as e:
-            raise RecordNotFoundException(f'Record not found f{e}')
+            raise RecordNotFoundException(f'Record not found: {e}')
 
 
 class DBCommitException(Exception):
