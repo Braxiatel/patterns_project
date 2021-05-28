@@ -3,6 +3,7 @@ from random import randint
 from sqlite3 import IntegrityError
 from zorro_framework.template_reader import render
 from patterns.engine import Engine
+from patterns.validators import Validator, ValidationException
 from patterns.logger import Logger
 from patterns.mapper_registry import MapperRegistry
 from patterns.decorators import timer, app_route
@@ -10,11 +11,13 @@ from patterns.views_templates import ListView, CreateView, UpdateView
 from patterns.api_module import BaseSerializer
 from patterns.updater import EmailNotify, SMSNotify
 from patterns.unit_of_work import UnitOfWork
+from patterns.db_mappers import RecordNotFoundException
 
 website_engine = Engine()
 logger = Logger('views')
 email_notifier = EmailNotify()
 sms_notifier = SMSNotify()
+validator = Validator()
 UnitOfWork.new_thread()
 UnitOfWork.get_thread().set_mapper_registry(MapperRegistry)
 routes = {}
@@ -103,33 +106,51 @@ class CoursesList(ListView):
 @app_route(routes=routes, url='/new_course/')
 class NewCourse(CreateView):
     template_name = 'new_course.html'
+    validation_error = ''
+    success_text = ''
 
     def create_object(self, data: dict):
-        name = data['name']
-        name = website_engine.decode_value(name)
-        location = data['location']
-        location = website_engine.decode_value(location)
-        start_date = data['start_date']
-        start_date = website_engine.decode_value(start_date)
-        category_name = data['category']
-        mapper = MapperRegistry.get_current_mapper('category')
-        category = mapper.get_category_by_name(category_name=category_name)
+        course_mapper = MapperRegistry.get_current_mapper('course')
+        try:
+            name = data['name']
+            name = website_engine.decode_value(name)
+            validator.word_validation(name)
+            try:
+                if course_mapper.get_course_by_name(name):
+                    self.validation_error = f'Course with this name: {name} already exists'
+                    raise ValidationException(f'Course with this name: {name} already exists')
+            except RecordNotFoundException:
+                pass
+            location = data['location']
+            location = website_engine.decode_value(location)
+            validator.word_validation(location)
+            start_date = data['start_date']
+            start_date = website_engine.decode_value(start_date)
+            validator.date_validation(start_date)
 
-        course = website_engine.create_course(type_='video', name=name, category=category,
-                                              location=location, start_date=start_date)
+            category_name = data['category']
+            mapper = MapperRegistry.get_current_mapper('category')
+            category = mapper.get_category_by_name(category_name=category_name)
 
-        category.courses.append(course)
-        category.mark_dirty()
-        course.mark_new()
-        UnitOfWork.get_thread().commit()
-        logger.log(f'Course {course} has been successfully created')
+            course = website_engine.create_course(type_='video', name=name, category=category,
+                                                  location=location, start_date=start_date)
 
-        course.observers.append(email_notifier)
-        course.observers.append(sms_notifier)
+            category.courses.append(course)
+            category.mark_dirty()
+            course.mark_new()
+            UnitOfWork.get_thread().commit()
+            logger.log(f'Course {course} has been successfully created')
+            self.success_text = f'Successfully added course {course}!'
+
+            course.observers.append(email_notifier)
+            course.observers.append(sms_notifier)
+        except ValidationException as e:
+            logger.log(f'Validation failed: {e}')
+            self.validation_error = e
 
     def get_context_data(self):
-        mapper = MapperRegistry.get_current_mapper('course')
-        courses = mapper.all()
+        course_mapper = MapperRegistry.get_current_mapper('course')
+        courses = course_mapper.all()
         context_data = super().get_context_data()
         context_data['objects_list'] = courses
         context_data['courses_count'] = [len(courses)]
@@ -137,13 +158,11 @@ class NewCourse(CreateView):
         categories_list = categories.all()
         context_data['categories_list'] = categories_list
         context_data['categories_count'] = [len(categories_list)]
+        context_data['validation_error'] = [self.validation_error]
+        context_data['success_text'] = [self.success_text]
+        self.validation_error = ''
+        self.success_text = ''
         return context_data
-
-    def template_for_post_request(self):
-        self.set_template_name('courses.html')
-
-    def template_for_get_request(self):
-        self.set_template_name('new_course.html')
 
 
 @app_route(routes=routes, url='/new_category/')
