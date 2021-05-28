@@ -164,6 +164,13 @@ class NewCourse(CreateView):
         self.success_text = ''
         return context_data
 
+    def template_for_post_request(self):
+        if self.success_text != '':
+            self.set_template_name('courses.html')
+
+    def template_for_get_request(self):
+        self.set_template_name('new_course.html')
+
 
 @app_route(routes=routes, url='/new_category/')
 class NewCategory(CreateView):
