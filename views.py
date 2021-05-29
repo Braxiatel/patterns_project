@@ -115,12 +115,9 @@ class NewCourse(CreateView):
             name = data['name']
             name = website_engine.decode_value(name)
             validator.word_validation(name)
-            try:
-                if course_mapper.get_course_by_name(name):
-                    self.validation_error = f'Course with this name: {name} already exists'
-                    raise ValidationException(f'Course with this name: {name} already exists')
-            except RecordNotFoundException:
-                pass
+            if course_mapper.check_course_exists(course_name=name):
+                self.validation_error = f'Course with this name: {name} already exists'
+                raise ValidationException(f'Course with this name: {name} already exists')
             location = data['location']
             location = website_engine.decode_value(location)
             validator.word_validation(location)
