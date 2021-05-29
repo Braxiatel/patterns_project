@@ -216,7 +216,7 @@ class CourseMapper:
         except Exception as e:
             raise DBDeleteException(e.args)
 
-    def get_course_by_name(self, course_name):
+    def get_course_by_name(self, course_name: str):
         statement = f'SELECT name, category, location, start_date FROM {self.tablename} WHERE name=?'
         try:
             self.cursor.execute(statement, (course_name, ))
@@ -234,22 +234,37 @@ class CourseMapper:
         except Exception as e:
             raise RecordNotFoundException(f'Record not found: {e}')
 
+    def check_course_exists(self, course_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (course_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
+
 
 class DBCommitException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB commit error {message}')
+        super().__init__(f'DB commit error: {message}')
 
 
 class DBUpdateException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB update error {message}')
+        super().__init__(f'DB update error: {message}')
 
 
 class DBDeleteException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB delete error {message}')
+        super().__init__(f'DB delete error: {message}')
 
 
 class RecordNotFoundException(Exception):
     def __init__(self, message):
         super().__init__(f'Record not found: {message}')
+
+
+class DBSelectException(Exception):
+    def __init__(self, message):
+        super().__init__(f'DB select error: {message}')
+
