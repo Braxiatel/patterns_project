@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}
+    Delete Course
+{% endblock %}
+{% block style %}
+    {% include 'block-style.html' %}
+{% endblock %}
+{% block body %}
+	{% if courses_count[0] == 0 %}
+	<br>
+	  <h1>No courses found</h1>
+	{% else %}
+		{% if error_message[0] %}
+			<div class="alert alert-danger">An error occurred: {{error_message[0]}}</div>
+		{% endif %}
+		<form action="" method="post">
+			<fieldset>
+				<h2>Choose a course to delete:</h2>
+				<p><label for="course_name" class="title">Course Name:</label>
+						 <select name="course_name" class="form-control" id="course_name">
+							{% for course in courses %}
+								<option value="{{course.name}}">
+									{{course.name}}
+								</option>
+							{% endfor %}
+						 </select></p><br />
+			</fieldset>
+		<div class="submit"><input class="btn btn-danger" type="submit" value="Delete" /></div>
+	</form>
+	{% endif %}
+{% endblock %}

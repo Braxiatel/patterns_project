@@ -199,7 +199,7 @@ class CourseMapper:
         return self.cursor.fetchone()
 
     def update(self, obj):
-        # id is not present in Student class, so take it from db
+        # id is not present in Course class, so take it from db
         course_id = self.get_id_by_name(obj.name)[0]
         statement = f'UPDATE {self.tablename} SET name=?, location=?, start_date=? WHERE course_id=?'
         self.cursor.execute(statement, (obj.name, obj.location, obj.start_date, course_id))
@@ -209,8 +209,9 @@ class CourseMapper:
             raise DBUpdateException(e.args)
 
     def delete(self, obj):
+        course_id = self.get_id_by_name(obj.name)[0]
         statement = f'DELETE FROM {self.tablename} WHERE course_id=?'
-        self.cursor.execute(statement, (obj.course_id,))
+        self.cursor.execute(statement, (course_id,))
         try:
             self.connection.commit()
         except Exception as e:

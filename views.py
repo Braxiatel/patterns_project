@@ -7,11 +7,10 @@ from patterns.validators import Validator, ValidationException
 from patterns.logger import Logger
 from patterns.mapper_registry import MapperRegistry
 from patterns.decorators import timer, app_route
-from patterns.views_templates import ListView, CreateView, UpdateView
+from patterns.views_templates import ListView, CreateView, UpdateView, DeleteView
 from patterns.api_module import BaseSerializer
 from patterns.updater import EmailNotify, SMSNotify
 from patterns.unit_of_work import UnitOfWork
-from patterns.db_mappers import RecordNotFoundException
 
 website_engine = Engine()
 logger = Logger('views')
@@ -250,6 +249,51 @@ class CourseUpdate(UpdateView):
         course.update_start_date(start_date)
         course.mark_dirty()
         UnitOfWork.get_thread().commit()
+
+    def template_for_post_request(self):
+        self.set_template_name('courses.html')
+
+    def template_for_get_request(self):
+        self.set_template_name('course_update.html')
+
+
+@app_route(routes=routes, url='/course_delete/')
+class CourseDelete(DeleteView):
+    template_name = 'course_delete.html'
+    error_message = ''
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        course_mapper = MapperRegistry.get_current_mapper('course')
+        courses = course_mapper.all()
+        context['courses'] = courses
+        context['courses_count'] = [len(courses)]
+        context['error_message'] = [self.error_message]
+        if courses:
+            context['objects_list'] = courses
+        self.error_message = ''
+        return context
+
+    def delete_object(self, data: dict):
+        try:
+            course_name = data['course_name']
+            course_mapper = MapperRegistry.get_current_mapper('course')
+            course = course_mapper.get_course_by_name(course_name)
+            course.mark_removed()
+            UnitOfWork.get_thread().commit()
+            logger.log(f'Successfully deleted course {course_name}!')
+        except Exception as e:
+            logger.log(f'An error occurred: {e}')
+            self.error_message = e
+
+    def template_for_post_request(self):
+        if not self.error_message:
+            self.set_template_name('courses.html')
+        else:
+            self.set_template_name('course_delete.html')
+
+    def template_for_get_request(self):
+        self.set_template_name('course_delete.html')
 
 
 @app_route(routes=routes, url='/signup/')
