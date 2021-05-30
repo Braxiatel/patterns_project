@@ -70,8 +70,9 @@ class StudentMapper:
             raise DBUpdateException(e.args)
 
     def delete(self, obj):
+        student_id = self.get_id_by_name(obj.name)[0]
         statement = f'DELETE FROM {self.tablename} WHERE id=?'
-        self.cursor.execute(statement, (obj.id,))
+        self.cursor.execute(statement, (student_id,))
         try:
             self.connection.commit()
         except Exception as e:

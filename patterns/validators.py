@@ -15,7 +15,7 @@ class Validator:
                 raise ValidationException(f'Not a valid string {input_string}! Please use only word characters.')
 
     def date_validation(self, input_string: str):
-        self.length_validation(input_string, 11)
+        self.length_validation(input_string, max_len=11)
         date_list = input_string.split('.')
         if len(date_list) != 3 or list(filter(lambda x: not x.isdigit(), date_list)):
             raise ValidationException('Not a valid string. DD.MM.YYYY is valid format.')
