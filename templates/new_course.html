@@ -21,7 +21,7 @@
 				<input type="text" class="form-control" name="name" id="name" required>
 			</p>
 			<p><label for="category" class="title">Category:</label>
-					 <select name="category" class="form-control" id="category" required>
+					 <select name="category" class="form-select" id="category" required>
 						{% for item in categories_list %}
 							<option value="{{item.name}}">
 								{{item.name}}
