@@ -10,7 +10,11 @@
 	<h3> At least one category should be added before creating new course. Add new category <a href="/new_category/">here</a></h3>
 {% else %}
     {% if validation_error[0] %}
-		<div class="alert alert-danger">Please fix following error: {{validation_error[0]}}</div>
+	<br>
+	<div class="alert alert-dismissible alert-danger fade show" role="alert">
+		<strong>Please fix following error:</strong> {{validation_error[0]}}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
 	{% elif success_text[0] %}
 		<div class="alert alert-success">{{success_text[0]}}</div>
 	{% endif %}
