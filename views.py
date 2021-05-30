@@ -171,20 +171,33 @@ class NewCourse(CreateView):
 @app_route(routes=routes, url='/new_category/')
 class NewCategory(CreateView):
     template_name = 'new_category.html'
+    validation_error = ''
 
     def create_object(self, data: dict):
-        category_name = data['name']
-        category_name = website_engine.decode_value(category_name)
-        category_id = randint(1000, 5000)
-        category = None
+        try:
+            category_name = data['name']
+            category_name = website_engine.decode_value(category_name)
+            validator.word_validation(category_name)
+            mapper = MapperRegistry.get_current_mapper('category')
+            if mapper.check_category_exists(category_name=category_name):
+                self.validation_error = f'Category with this name: {category_name} already exists'
+                raise ValidationException(f'Category with this name: {category_name} already exists')
+            category_id = randint(1000, 5000)
+            category = None
 
-        new_category = website_engine.create_category(name=category_name, category=category, category_id=category_id)
-        new_category.mark_new()
-        UnitOfWork.get_thread().commit()
-        logger.log(f'Successfully added new category {new_category}')
+            new_category = website_engine.create_category(name=category_name, category=category, category_id=category_id)
+            new_category.mark_new()
+            UnitOfWork.get_thread().commit()
+            logger.log(f'Successfully added new category {new_category}')
+        except ValidationException as e:
+            logger.log(f'{e}')
+            self.validation_error = e
 
     def template_for_post_request(self):
-        self.set_template_name('categories.html')
+        if self.validation_error:
+            self.set_template_name('new_category.html')
+        else:
+            self.set_template_name('categories.html')
 
     def template_for_get_request(self):
         self.set_template_name('new_category.html')
@@ -195,6 +208,8 @@ class NewCategory(CreateView):
         context = super().get_context_data()
         context['objects_list'] = categories
         context['categories_count'] = [len(categories)]
+        context['validation_error'] = [self.validation_error]
+        self.validation_error = ''
         return context
 
 

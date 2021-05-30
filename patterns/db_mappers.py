@@ -127,6 +127,15 @@ class CategoryMapper:
         except TypeError:
             return '[]'
 
+    def check_category_exists(self, category_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (category_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
+
     def insert(self, obj):
         courses = '[]'
         statement = f'INSERT INTO {self.tablename} (name, category, category_id, courses ) VALUES (?, ?, ?, ?)'
