@@ -14,7 +14,7 @@
 					{% if courses_count[0] == 0 %}
 						<p>No courses are found</p>
 				    {% else %}
-						<select class="form-control" name="course_name" id="course_name">
+						<select class="form-select" name="course_name" id="course_name">
 							{% for course in courses %}
 								 <option value="{{course}}">{{course}}</option>
 							{% endfor %}
@@ -27,7 +27,7 @@
 					{% if students_count[0] == 0 %}
 						<p>No students are found</p>
 					{% else %}
-						<select class="form-control" name="student_name" id="student_name">
+						<select class="form-select" name="student_name" id="student_name">
 							{% for student in students %}
 								 <option value="{{student}}">{{student}}</option>
 							{% endfor %}

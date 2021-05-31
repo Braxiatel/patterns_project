@@ -8,7 +8,7 @@
 {% block body %}
   <br />
   {% if courses_count[0] == 0 %}
-  <h1>No courses found</h1>
+    <h1>No courses found</h1>
   {% else %}
   <div>
       <a href="/new_course/">Create new course</a>
@@ -16,8 +16,8 @@
           <h1>List of courses: </h1>
       <br>
       <table class="table">
-          <thead class="thead-dark">
-            <tr>
+          <thead>
+            <tr class="table-dark">
                 <th scope="col">Name</th>
                 <th scope="col">Location</th>
                 <th scope="col">Start Date</th>

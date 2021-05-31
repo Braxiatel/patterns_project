@@ -50,6 +50,15 @@ class StudentMapper:
         self.cursor.execute(statement, (student_name,))
         return self.cursor.fetchone()
 
+    def check_student_exists(self, student_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (student_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
+
     def insert(self, obj):
         user_id = randint(1000, 5000)
         statement = f'INSERT INTO {self.tablename} (id, name, email) VALUES (?, ?, ?)'
@@ -70,8 +79,9 @@ class StudentMapper:
             raise DBUpdateException(e.args)
 
     def delete(self, obj):
+        student_id = self.get_id_by_name(obj.name)[0]
         statement = f'DELETE FROM {self.tablename} WHERE id=?'
-        self.cursor.execute(statement, (obj.id,))
+        self.cursor.execute(statement, (student_id,))
         try:
             self.connection.commit()
         except Exception as e:
@@ -125,6 +135,15 @@ class CategoryMapper:
             return result if result else '[]'
         except TypeError:
             return '[]'
+
+    def check_category_exists(self, category_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (category_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
 
     def insert(self, obj):
         courses = '[]'
@@ -199,7 +218,7 @@ class CourseMapper:
         return self.cursor.fetchone()
 
     def update(self, obj):
-        # id is not present in Student class, so take it from db
+        # id is not present in Course class, so take it from db
         course_id = self.get_id_by_name(obj.name)[0]
         statement = f'UPDATE {self.tablename} SET name=?, location=?, start_date=? WHERE course_id=?'
         self.cursor.execute(statement, (obj.name, obj.location, obj.start_date, course_id))
@@ -209,20 +228,21 @@ class CourseMapper:
             raise DBUpdateException(e.args)
 
     def delete(self, obj):
+        course_id = self.get_id_by_name(obj.name)[0]
         statement = f'DELETE FROM {self.tablename} WHERE course_id=?'
-        self.cursor.execute(statement, (obj.course_id,))
+        self.cursor.execute(statement, (course_id,))
         try:
             self.connection.commit()
         except Exception as e:
             raise DBDeleteException(e.args)
 
-    def get_course_by_name(self, course_name):
+    def get_course_by_name(self, course_name: str):
         statement = f'SELECT name, category, location, start_date FROM {self.tablename} WHERE name=?'
         try:
             self.cursor.execute(statement, (course_name, ))
             result = self.cursor.fetchone()
 
-            logger.log(f"Got result of execution {result} and type {type(result)}")
+            logger.log(f"Got result of execution {result}")
             if result:
                 # rebuilding 'result', because category is stored in db as id (int),
                 # but Course class requires Category (user class) as input
@@ -234,22 +254,37 @@ class CourseMapper:
         except Exception as e:
             raise RecordNotFoundException(f'Record not found: {e}')
 
+    def check_course_exists(self, course_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (course_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
+
 
 class DBCommitException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB commit error {message}')
+        super().__init__(f'DB commit error: {message}')
 
 
 class DBUpdateException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB update error {message}')
+        super().__init__(f'DB update error: {message}')
 
 
 class DBDeleteException(Exception):
     def __init__(self, message):
-        super().__init__(f'DB delete error {message}')
+        super().__init__(f'DB delete error: {message}')
 
 
 class RecordNotFoundException(Exception):
     def __init__(self, message):
         super().__init__(f'Record not found: {message}')
+
+
+class DBSelectException(Exception):
+    def __init__(self, message):
+        super().__init__(f'DB select error: {message}')
+

@@ -6,6 +6,13 @@
     {% include 'block-style.html' %}
 {% endblock %}
 {% block body %}
+{% if error_message[0] %}
+	<br>
+	<div class="alert alert-dismissible alert-danger fade show" role="alert">
+		<strong>Please fix following error:</strong> {{error_message[0]}}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+{% endif %}
 	<form action="" method="post">
 			<fieldset>
 				<h2>Sign Up:</h2>
@@ -16,7 +23,7 @@
                      <label class="title" for="password">Password:</label>
 					 <input type="password" class="form-control" required="true" name="password" id="password"></p>
               <p><label for="role" class="title">Role:</label>
-					 <select class="form-control" name="role" id="role">
+					 <select class="form-select" name="role" id="role">
 						 <option value="student">Student</option>
 						 <option value="teacher">Teacher</option>
 					 </select></p>

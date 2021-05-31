@@ -99,3 +99,24 @@ class UpdateView(TemplateView):
         else:
             self.template_for_get_request()
             return super().__call__(request)
+
+
+class DeleteView(TemplateView):
+    template_name = ''
+
+    @staticmethod
+    def get_request_data(request):
+        return request['data']
+
+    def delete_object(self, data):
+        pass
+
+    def __call__(self, request):
+        if request['method'] == 'POST':
+            data = self.get_request_data(request)
+            self.delete_object(data)
+            self.template_for_post_request()
+            return self.render_template_with_context()
+        else:
+            self.template_for_get_request()
+            return super().__call__(request)

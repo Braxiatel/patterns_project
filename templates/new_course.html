@@ -9,14 +9,23 @@
 {% if categories_count[0] == 0 %}
 	<h3> At least one category should be added before creating new course. Add new category <a href="/new_category/">here</a></h3>
 {% else %}
+    {% if validation_error[0] %}
+	<br>
+	<div class="alert alert-dismissible alert-danger fade show" role="alert">
+		<strong>Please fix following error:</strong> {{validation_error[0]}}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	{% elif success_text[0] %}
+		<div class="alert alert-success">{{success_text[0]}}</div>
+	{% endif %}
 	<form action="" method="post">
 		<fieldset>
 			<h2>Add a new course:</h2>
 			<p><label class="title" for="name">Name:</label>
-				<input type="text" class="form-control" name="name" id="name">
+				<input type="text" class="form-control" name="name" id="name" required>
 			</p>
 			<p><label for="category" class="title">Category:</label>
-					 <select name="category" class="form-control" id="category" required="true">
+					 <select name="category" class="form-select" id="category" required>
 						{% for item in categories_list %}
 							<option value="{{item.name}}">
 								{{item.name}}
@@ -24,10 +33,10 @@
 						{% endfor %}
 					 </select></p>
 			<p><label class="title" for="location">Location:</label>
-				<input type="text" class="form-control" name="location" id="location">
+				<input type="text" class="form-control" name="location" id="location" required>
 			</p>
-			<p><label class="title" for="start_date">Start date:</label>
-				<input type="text" class="form-control" name="start_date" id="start_date"><br />
+			<p><label class="title" for="start_date">Start date (DD.MM.YYYY):</label>
+				<input type="text" class="form-control" name="start_date" id="start_date" required><br />
 			</p>
 		</fieldset>
 	<div class="submit"><input class="btn btn-dark" type="submit" value="Send" /></div>
