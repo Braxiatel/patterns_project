@@ -50,6 +50,15 @@ class StudentMapper:
         self.cursor.execute(statement, (student_name,))
         return self.cursor.fetchone()
 
+    def check_student_exists(self, student_name: str):
+        statement = f'SELECT name FROM {self.tablename} WHERE name=?'
+        try:
+            self.cursor.execute(statement, (student_name,))
+            result = self.cursor.fetchone()
+            return True if result else False
+        except Exception as e:
+            raise DBSelectException(f'An error occurred during select: {e}')
+
     def insert(self, obj):
         user_id = randint(1000, 5000)
         statement = f'INSERT INTO {self.tablename} (id, name, email) VALUES (?, ?, ?)'
