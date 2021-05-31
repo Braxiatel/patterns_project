@@ -55,6 +55,11 @@ class UnitOfWork:
         self.update_dirty()
         self.delete_removed()
 
+        self.new_objects.clear()
+        self.dirty_objects.clear()
+        self.removed_objects.clear()
+
+
     @staticmethod
     def new_thread():
         __class__.set_thread(UnitOfWork())
