@@ -242,7 +242,7 @@ class CourseMapper:
             self.cursor.execute(statement, (course_name, ))
             result = self.cursor.fetchone()
 
-            logger.log(f"Got result of execution {result} and type {type(result)}")
+            logger.log(f"Got result of execution {result}")
             if result:
                 # rebuilding 'result', because category is stored in db as id (int),
                 # but Course class requires Category (user class) as input
