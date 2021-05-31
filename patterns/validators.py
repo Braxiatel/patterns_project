@@ -1,3 +1,6 @@
+import re
+
+
 class Validator:
     def __init__(self):
         self.input_string = ''
@@ -19,6 +22,13 @@ class Validator:
         date_list = input_string.split('.')
         if len(date_list) != 3 or list(filter(lambda x: not x.isdigit(), date_list)):
             raise ValidationException('Not a valid string. DD.MM.YYYY is valid format.')
+
+    @staticmethod
+    def email_validation(input_string: str):
+        reg = re.compile('^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9.-]+$')
+        email = reg.match(input_string)
+        if not email:
+            raise ValidationException('Not a valid email. xxx@xxx.xxx is a valid format.')
 
 
 class ValidationException(Exception):
