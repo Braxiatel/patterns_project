@@ -181,7 +181,7 @@ class NewCategory(CreateView):
             mapper = MapperRegistry.get_current_mapper('category')
             if mapper.check_category_exists(category_name=category_name):
                 self.validation_error = f'Category with this name: {category_name} already exists'
-                raise ValidationException(f'Category with this name: {category_name} already exists')
+                raise ValidationException(self.validation_error)
             category_id = randint(1000, 5000)
             category = None
 
@@ -245,6 +245,7 @@ class CourseCopy:
 @app_route(routes=routes, url='/course_update/')
 class CourseUpdate(UpdateView):
     template_name = 'course_update.html'
+    error_message = ''
 
     def get_context_data(self):
         context = super().get_context_data()
@@ -252,21 +253,34 @@ class CourseUpdate(UpdateView):
         courses = course_mapper.all()
         context['courses'] = courses
         context['courses_count'] = [len(courses)]
+        context['error_message'] = [self.error_message]
+        context['objects_list'] = courses
+        self.error_message = ''
         return context
 
     def update_object(self, data: dict):
-        course_name = data['course_name']
-        course_mapper = MapperRegistry.get_current_mapper('course')
-        course = course_mapper.get_course_by_name(course_name)
-        location = data['location']
-        start_date = data['start_date']
-        course.update_location(location)
-        course.update_start_date(start_date)
-        course.mark_dirty()
-        UnitOfWork.get_thread().commit()
+        try:
+            course_name = data['course_name']
+            course_mapper = MapperRegistry.get_current_mapper('course')
+            course = course_mapper.get_course_by_name(course_name)
+            location = data['location']
+            validator.word_validation(location)
+            start_date = data['start_date']
+            validator.date_validation(start_date)
+
+            course.update_location(location)
+            course.update_start_date(start_date)
+            course.mark_dirty()
+            UnitOfWork.get_thread().commit()
+        except ValidationException as e:
+            self.error_message = e
+            logger.log(f'An error occurred: {self.error_message}')
 
     def template_for_post_request(self):
-        self.set_template_name('courses.html')
+        if self.error_message:
+            self.set_template_name('course_update.html')
+        else:
+            self.set_template_name('courses.html')
 
     def template_for_get_request(self):
         self.set_template_name('course_update.html')
@@ -353,23 +367,37 @@ class CourseDelete(DeleteView):
 @app_route(routes=routes, url='/signup/')
 class Signup(CreateView):
     template_name = 'signup.html'
+    error_message = ''
 
     def create_object(self, data: dict):
-        name = data['name']
-        name = website_engine.decode_value(name)
-        email, role = data['email'], data['role']
+        try:
+            name = data['name']
+            name = website_engine.decode_value(name)
+            validator.word_validation(name)
+            email, role = data['email'], data['role']
+            validator.email_validation(email)
+            mapper = MapperRegistry.get_current_mapper('student')
+            if mapper.check_student_exists(student_name=name):
+                self.error_message = f'Student with this name "{name}" already exists'
+                raise ValidationException(self.error_message)
 
-        if role == 'student':
-            user = website_engine.create_user(type_=role, name=name, email=email)
-            user.mark_new()
-            UnitOfWork.get_thread().commit()
-        elif role == 'teacher':
-            user = website_engine.create_user(type_=role, name=name, email=email)
-            website_engine.teachers.append(user)
-            logger.log(website_engine.teachers)
+            if role == 'student':
+                user = website_engine.create_user(type_=role, name=name, email=email)
+                user.mark_new()
+                UnitOfWork.get_thread().commit()
+            elif role == 'teacher':
+                user = website_engine.create_user(type_=role, name=name, email=email)
+                website_engine.teachers.append(user)
+                logger.log(website_engine.teachers)
+        except ValidationException as e:
+            self.error_message = e
+            logger.log(f'Validation error occurred: {e}')
 
     def template_for_post_request(self):
-        self.set_template_name('student_list.html')
+        if self.error_message:
+            self.set_template_name('signup.html')
+        else:
+            self.set_template_name('student_list.html')
 
     def template_for_get_request(self):
         self.set_template_name('signup.html')
@@ -380,6 +408,8 @@ class Signup(CreateView):
         context = super().get_context_data()
         context['students'] = user_students
         context['students_count'] = [len(user_students)]
+        context['error_message'] = [self.error_message]
+        self.error_message = ''
         return context
 
 
@@ -400,6 +430,7 @@ class StudentListView(ListView):
 @app_route(routes=routes, url='/student_update/')
 class StudentUpdateView(UpdateView):
     template_name = 'student_update.html'
+    error_message = ''
 
     def get_context_data(self):
         mapper = MapperRegistry.get_current_mapper('student')
@@ -408,23 +439,33 @@ class StudentUpdateView(UpdateView):
         context = super().get_context_data()
         context['students'] = user_students
         context['students_count'] = [len(user_students)]
+        context['error_message'] = [self.error_message]
+        self.error_message = ''
         return context
 
     def update_object(self, data: dict):
-        email = data['email']
-        student_name = data['student_name']
-        student_name = website_engine.decode_value(student_name)
+        try:
+            email = data['email']
+            validator.email_validation(email)
+            student_name = data['student_name']
+            student_name = website_engine.decode_value(student_name)
 
-        mapper = MapperRegistry.get_current_mapper('student')
-        student = mapper.get_student_by_name(student_name)
+            mapper = MapperRegistry.get_current_mapper('student')
+            student = mapper.get_student_by_name(student_name)
 
-        student.update_email(email)
-        student.mark_dirty()
-        UnitOfWork.get_thread().commit()
-        logger.log(f'Now the student is: {student}')
+            student.update_email(email)
+            student.mark_dirty()
+            UnitOfWork.get_thread().commit()
+            logger.log(f'Updated student is: {student}')
+        except ValidationException as e:
+            self.error_message = e
+            logger.log(f'An error occurred: {self.error_message}')
 
     def template_for_post_request(self):
-        self.set_template_name('student_list.html')
+        if self.error_message:
+            self.set_template_name('student_update.html')
+        else:
+            self.set_template_name('student_list.html')
 
     def template_for_get_request(self):
         self.set_template_name('student_update.html')
@@ -434,4 +475,6 @@ class StudentUpdateView(UpdateView):
 class CourseApi:
     @timer(name='CourseApi')
     def __call__(self, request):
-        return '200 OK', BaseSerializer(website_engine.courses).save()
+        mapper = MapperRegistry.get_current_mapper('course')
+        courses = mapper.all()
+        return '200 OK', BaseSerializer(courses).save()
