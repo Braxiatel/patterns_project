@@ -10,6 +10,13 @@
 	<br>
 	  <h1>No students found</h1>
 	{% else %}
+		{% if error_message[0] %}
+			<br>
+			<div class="alert alert-dismissible alert-danger fade show" role="alert">
+				<strong>Please fix following error:</strong> {{error_message[0]}}
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+			</div>
+		{% endif %}
 		<form action="" method="post">
 			<fieldset>
 				<div class="form-group">
