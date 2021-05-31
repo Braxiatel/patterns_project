@@ -10,6 +10,13 @@
 	<br>
 	  <h1>No courses found</h1>
 	{% else %}
+		{% if error_message[0] %}
+		<br>
+		<div class="alert alert-dismissible alert-danger fade show" role="alert">
+			<strong>Please fix following error:</strong> {{error_message[0]}}
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+		{% endif %}
 		<form action="" method="post">
 			<fieldset>
 				<h2>Update A Course:</h2>
@@ -24,7 +31,7 @@
 				<p><label class="title" for="location">Location:</label>
 					 <input type="text" class="form-control" name="location" id="location"><br />
 				</p>
-				<p><label class="title" for="start_date">Start Date:</label>
+				<p><label class="title" for="start_date">Start Date (DD.MM.YYYY):</label>
 					 <input type="text" class="form-control" name="start_date" id="start_date"><br />
 				</p>
 			</fieldset>
